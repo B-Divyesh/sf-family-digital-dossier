@@ -1,0 +1,12 @@
+{
+  "slug": "family-digital-dossier",
+  "title": "Family Digital Dossier",
+  "territory": "utilities",
+  "user": "Adults who want a trusted family member or executor to locate essential digital records during illness or death without handing over their entire password vault today.",
+  "smallest_useful_product": "An offline encrypted template that records institutions, document locations, renewal dates, emergency contacts, and executor instructions; it generates a review checklist and a printable sealed-cover sheet.",
+  "success_measure": "60% of users complete at least ten locator entries and perform a scheduled six-month review; test recipients can locate three requested records using only the generated dossier.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Client-side encryption; no credentials; jurisdiction-specific legal limitations; users control print and storage security.",
+  "state": "RESEARCHED"
+}
