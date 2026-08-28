@@ -186,6 +186,21 @@ test('@claim:uc-08 @claim:uc-10 @claim:uc-14 fields persist and secret boundarie
   expect(await page.evaluate(() => (window as Window & { printCalled?: boolean }).printCalled || false)).toBe(false);
 });
 
+test('@claim:uc-16 all dossier tools are available without a purchase or license', async ({ page }) => {
+  await openDemo(page);
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  for (const name of ['Export encrypted backup', 'Export readable CSV', 'Import encrypted backup', 'Change passphrase', 'Delete this dossier']) {
+    await expect(page.getByRole('button', { name, exact: true })).toBeEnabled();
+  }
+  await page.getByRole('link', { name: 'Review & print', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Print sealed cover' })).toBeEnabled();
+  const controls = (await page.locator('a, button').allTextContents()).join(' ');
+  expect(controls).not.toMatch(/(?:buy|checkout|license|upgrade|paid|plus)/i);
+  const paymentLinks = await page.locator('a[href*="checkout"], a[href*="license"], a[href*="api.sociobot.in"]').count();
+  expect(paymentLinks).toBe(0);
+  expect(readFileSync('src/main.ts', 'utf8')).not.toMatch(/(?:license|checkout|billing|api\.sociobot\.in)/i);
+});
+
 test('@claim:uc-11 review schedule, history, and three-record drill persist', async ({ page }) => {
   await openDemo(page);
   await page.getByRole('link', { name: 'Review & print' }).click();

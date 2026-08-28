@@ -98,6 +98,13 @@
     "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
   },
   {
+    "id": "uc-16",
+    "claim": "All dossier tools are free and do not require a purchase or license.",
+    "where": "landing fact strip",
+    "test": "npm run test:claims -- --grep @claim:uc-16",
+    "sandbox": "fresh Chromium context opened at /?demo=1; exercise every Settings and print control without a token, and assert no purchase or license path exists"
+  },
+  {
     "id": "uc-17",
     "claim": "The browser stores one encrypted dossier envelope in IndexedDB.",
     "where": "README",
