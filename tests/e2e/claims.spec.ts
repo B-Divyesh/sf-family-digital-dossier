@@ -250,8 +250,10 @@ test('@claim:uc-06 @claim:uc-13 backup restore, passphrase change, install metad
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
   await context.setOffline(true);
   const offlinePage = await context.newPage();
-  await offlinePage.goto('/demo/records', { waitUntil: 'domcontentloaded' });
-  await expect(offlinePage.getByRole('heading', { level: 1, name: 'Essential records' })).toBeVisible({ timeout: 7_000 });
+  await offlinePage.goto('/demo', { waitUntil: 'domcontentloaded' });
+  await expect(offlinePage.getByRole('heading', { level: 1, name: 'Asha Mehta’s dossier' })).toBeVisible({ timeout: 7_000 });
+  await expect(offlinePage.getByText('10', { exact: true }).first()).toBeVisible();
+  await offlinePage.getByRole('link', { name: 'Records', exact: true }).click();
   await expect(offlinePage.getByText('Term life insurance policy')).toBeVisible();
   await offlinePage.reload({ waitUntil: 'domcontentloaded' });
   await expect(offlinePage.getByText('Demo — sample data, nothing is saved to your dossier.')).toBeVisible();
