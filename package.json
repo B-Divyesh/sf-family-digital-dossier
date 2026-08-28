@@ -12,7 +12,7 @@
     "test": "npm run typecheck && npm run lint && vitest run && npm run build && playwright test",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "test:claims": "playwright test tests/e2e/claims.spec.ts"
+    "test:claims": "npm run build && playwright test tests/e2e/claims.spec.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

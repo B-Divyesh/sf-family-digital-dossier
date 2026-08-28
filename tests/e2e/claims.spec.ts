@@ -262,33 +262,34 @@ test('@claim:uc-06 @claim:uc-13 backup restore, passphrase change, install metad
   await expect(offlinePage.getByText('Demo — sample data, nothing is saved to your dossier.')).toBeVisible();
 });
 
-test('@claim:uc-15 @claim:uc-16 @claim:uc-22 Plus terms, free tools, and daily license verification behave as stated', async ({ page }) => {
-  const external: string[] = [];
-  page.on('request', (request) => { if (new URL(request.url()).origin !== APP_ORIGIN) external.push(request.url()); });
-  await openDemo(page);
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Export encrypted backup' })).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Export readable CSV' })).toBeEnabled();
-  await page.getByRole('link', { name: 'Review & print' }).click();
-  await expect(page.getByRole('button', { name: 'Print sealed cover' })).toBeEnabled();
-  expect(external).toEqual([]);
+test('@claim:uc-26 the app has no upload or account-access feature and warns about sensitive pasted content', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Dossier Plus — ₹799 once' })).toBeVisible();
-  await page.route('https://api.sociobot.in/api/v1/products/family-digital-dossier/verify?license=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"valid":true,"reason":"ok"}' }));
-  await page.evaluate(() => localStorage.setItem('sb_license:family-digital-dossier', 'test-license-token'));
-  external.length = 0;
-  await page.goto('/demo/settings');
-  await expect(page.getByRole('heading', { name: 'License active' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Add starter template' })).toBeVisible();
-  expect(external).toHaveLength(1);
+  await expect(page.getByText('The app has no document upload or account-access feature.')).toBeVisible();
+  await expect(page.getByText('Do not paste passwords or document contents into notes.')).toBeVisible();
+  expect(await page.locator('input[type="file"]').count()).toBe(0);
+  expect(await page.locator('a[href*="account"], button').allTextContents()).not.toContain('Access account');
+  await openDemo(page);
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
+  await page.getByRole('button', { name: 'Add a record' }).click();
+  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await expect(page.locator('#record-instructions')).toBeVisible();
+});
+
+test('@claim:uc-27 record-to-person links persist and clear when the person is deleted', async ({ page }) => {
+  await openDemo(page);
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit Term life insurance policy' }).click();
+  await page.locator('#record-contact').selectOption({ label: 'Mira Mehta' });
+  await page.getByRole('button', { name: 'Save record' }).click();
+  await expect(page.getByText('Contact: Mira Mehta').first()).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'License active' })).toBeVisible();
-  expect(external).toHaveLength(1);
-  await page.getByRole('link', { name: 'Review & print' }).click();
-  await expect(page.getByRole('button', { name: 'Print all handoff pages' })).toBeVisible();
-  await page.evaluate(() => { (window as Window & { printCalled?: boolean }).print = () => { (window as Window & { printCalled?: boolean }).printCalled = true; }; });
-  await page.getByRole('button', { name: 'Print all handoff pages' }).click();
-  expect(await page.evaluate(() => (window as Window & { printCalled?: boolean }).printCalled)).toBe(true);
+  await expect(page.getByText('Contact: Mira Mehta').first()).toBeVisible();
+  await page.getByRole('link', { name: 'People', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit Mira Mehta' }).click();
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Delete person' }).click();
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
+  await expect(page.getByText('Contact: Mira Mehta')).toHaveCount(0);
 });
 
 test('@claim:uc-23 @claim:uc-24 @claim:uc-25 documentation, build outputs, policies, and artwork provenance match the product', async ({ page }) => {
@@ -308,7 +309,21 @@ test('@claim:uc-23 @claim:uc-24 @claim:uc-25 documentation, build outputs, polic
   expect(config.routes).toContainEqual(expect.objectContaining({ route: '/assets/*', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } }));
   expect(config.globalHeaders['Content-Security-Policy']).toContain("script-src 'self'");
   expect(config.responseOverrides['404'].statusCode).toBe(404);
-  await expect(page.getByText('Original generated artwork · Build polish-1')).toBeVisible();
+  await expect(page.getByText('We generated the original artwork for this product. Build polish-2.')).toBeVisible();
   expect(readFileSync('.factory/design.md', 'utf8')).toContain('exact prompt above');
   expect(readFileSync('assets/src/hero-archive.json', 'utf8')).toContain('factory-image');
+});
+
+test('@claim:uc-28 the documented Playwright version is pinned in package and lock files', async ({ page }) => {
+  await openDemo(page);
+  const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as { devDependencies: Record<string, string> };
+  expect(packageJson.devDependencies['@playwright/test']).toBe('1.58.2');
+  expect(readFileSync('package-lock.json', 'utf8')).toContain('"@playwright/test": "1.58.2"');
+  expect(readFileSync('README.md', 'utf8')).toContain('Playwright is pinned to 1.58.2.');
+});
+
+test('@claim:uc-29 the project license is MIT', async ({ page }) => {
+  await openDemo(page);
+  expect(readFileSync('LICENSE', 'utf8')).toContain('MIT License');
+  expect(readFileSync('README.md', 'utf8')).toContain('The project uses the MIT license.');
 });

@@ -7,31 +7,29 @@ Count method: Unicode word tokens; hyphenated terms count as one. The banned-wor
 | ID | Words | Copy |
 | --- | ---: | --- |
 | L01 | 7 | Map essential records for someone you trust |
-| L02 | 14 | For adults preparing family or an executor to find records during illness or death. |
+| L02 | 14 | For adults helping family or an executor find records during illness or after death. |
 | L03 | 8 | The sample opens as a filled, private dossier. |
 | L04 | 4 | Saved on this device |
 | L05 | 4 | Works offline after setup |
-| L06 | 8 | Core tools are free; Plus costs ₹799 once |
+| L06 | 4 | All tools are free |
 | L07 | 7 | Never enter a password or recovery code. |
 | L08 | 10 | Record what exists, where it is, and who to contact. |
 | L09 | 13 | Preview locations, trusted people, review dates, and first steps without entering personal details. |
 | L10 | 9 | Name each record and point to its safe location. |
 | L11 | 4 | Keep every secret elsewhere. |
-| L12 | 12 | Link family members and professionals who can explain or locate each record. |
+| L12 | 13 | Link a family member or professional to each record when they can help. |
 | L13 | 12 | Review the dossier, then print a cover or save an encrypted backup. |
-| L14 | 13 | It does not store passwords, copy documents, access accounts, or replace legal advice. |
-| L15 | 10 | Your passphrase encrypts the dossier before this browser saves it. |
-| L16 | 7 | There is no account or recovery reset. |
-| L17 | 11 | Plus adds starter checklists and prints every handoff page at once. |
-| L18 | 8 | Encryption, reviews, cover printing, and exports remain free. |
-| L19 | 5 | Sociobot and Dodo handle checkout. |
-| L20 | 6 | Your dossier stays on this device. |
-| L21 | 10 | Your passphrase encrypts the dossier before this browser saves it. |
-| L22 | 6 | We cannot see or recover it. |
-| L23 | 9 | Use 4–6 unrelated words (at least 12 characters). |
-| L24 | 9 | Store a copy somewhere your executor can eventually access. |
-| L25 | 13 | I understand there is no reset or recovery if I lose this passphrase. |
-| L26 | 7 | A private guide to essential family records. |
+| L14 | 9 | The app has no document upload or account-access feature. |
+| L15 | 9 | Do not paste passwords or document contents into notes. |
+| L16 | 6 | It does not give legal advice. |
+| L17 | 10 | Your passphrase encrypts the dossier before this browser saves it. |
+| L18 | 7 | There is no account or recovery reset. |
+| L19 | 10 | Your passphrase encrypts the dossier before this browser saves it. |
+| L20 | 6 | We cannot see or recover it. |
+| L21 | 9 | Use 4–6 unrelated words (at least 12 characters). |
+| L22 | 9 | Store a copy somewhere your executor can eventually access. |
+| L23 | 13 | I understand there is no reset or recovery if I lose this passphrase. |
+| L24 | 7 | A private guide to essential family records. |
 
 All landing sentences are 14 words or fewer. None contains a banned marketing word. “Unlock” appears only for the literal action of opening an encrypted dossier.
 
@@ -47,7 +45,7 @@ All landing sentences are 14 words or fewer. None contains a banned marketing wo
 | Prepare the handoff in three steps | Introduces three verb-led steps. |
 | List record locations / Name trusted people / Print or export the handoff | Stable terms and concrete actions. |
 | What this dossier does not do | Names limits directly. |
-| Dossier Plus — ₹799 once | States tier and price. |
+| All tools are free | States that no purchase is required. |
 
 ## README sentences
 
@@ -63,6 +61,6 @@ Every README prose sentence is at most 17 words. The longest are the review, res
 | Where an item can be found | location |
 | Protected portable file | encrypted backup |
 | Readable tabular file | spreadsheet |
-| Optional purchase | Dossier Plus |
+| Payment tier | none |
 
 Implementation names such as IndexedDB, AES-256-GCM, and PBKDF2-SHA-256 appear only in technical or privacy explanations.

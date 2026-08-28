@@ -98,20 +98,6 @@
     "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
   },
   {
-    "id": "uc-15",
-    "claim": "Dossier Plus costs ₹799 once and adds starter checklists and full handoff printing.",
-    "where": "landing, settings, terms",
-    "test": "npm run test:claims -- --grep @claim:uc-15",
-    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
-  },
-  {
-    "id": "uc-16",
-    "claim": "Encryption, reviews, cover printing, and exports remain free.",
-    "where": "landing and README",
-    "test": "npm run test:claims -- --grep @claim:uc-16",
-    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
-  },
-  {
     "id": "uc-17",
     "claim": "The browser stores one encrypted dossier envelope in IndexedDB.",
     "where": "README",
@@ -147,13 +133,6 @@
     "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
   },
   {
-    "id": "uc-22",
-    "claim": "The app calls only the Sociobot license service after a license is added, at most once daily.",
-    "where": "README and privacy",
-    "test": "npm run test:claims -- --grep @claim:uc-22",
-    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
-  },
-  {
     "id": "uc-23",
     "claim": "npm test runs type checks, lint, unit tests, a build, and browser checks.",
     "where": "README",
@@ -172,6 +151,34 @@
     "claim": "Generated imagery is disclosed and its source and prompt are recorded.",
     "where": "README, footer, design record",
     "test": "npm run test:claims -- --grep @claim:uc-25",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-26",
+    "claim": "The app has no document upload or account-access feature and warns against pasting sensitive content.",
+    "where": "landing and README",
+    "test": "npm run test:claims -- --grep @claim:uc-26",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-27",
+    "claim": "A record can link to a trusted person, and deleting that person clears the link.",
+    "where": "landing workflow",
+    "test": "npm run test:claims -- --grep @claim:uc-27",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-28",
+    "claim": "Playwright is pinned to 1.58.2.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-28",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-29",
+    "claim": "The project uses the MIT license.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-29",
     "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
   }
 ]

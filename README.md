@@ -6,7 +6,7 @@ Open the [live app](https://family-digital-dossier.sociobot.in) or [try the samp
 
 ## Who it is for
 
-It is for adults preparing records for family, an executor, or another trusted person. It does not store passwords, create legal documents, access accounts, or give legal advice.
+It is for adults preparing records for family, an executor, or another trusted person. The app has no document upload or account-access feature. Do not paste passwords or document contents into notes. It does not give legal advice.
 
 ## What it does
 
@@ -16,8 +16,6 @@ It is for adults preparing records for family, an executor, or another trusted p
 - Prints a sealed cover sheet. Exports an encrypted backup or a readable spreadsheet.
 - Restores backups, changes passphrases, works offline after the first visit, and can be installed on a device.
 - Rejects text that resembles a password or recovery code. Blocks readable exports until detected secrets are removed.
-- Offers Dossier Plus for ₹799 once. Plus adds starter checklists and prints every handoff page at once.
-- Keeps encryption, reviews, cover printing, and both exports free.
 
 ## Privacy and lost passphrases
 
@@ -27,7 +25,7 @@ The passphrase stays in memory only while the dossier is open. It is never store
 
 Keep an encrypted backup. Arrange for the right person to receive the passphrase separately. Spreadsheet exports and printed pages are readable and not encrypted. Protect exported files and printed pages.
 
-The app has no analytics, third-party scripts, or remote fonts. It contacts the Sociobot licensing service only after you add a license. That check happens at most once per day.
+The app has no analytics, third-party scripts, or remote fonts.
 
 ## Develop and verify
 
@@ -53,7 +51,7 @@ The production command is `npm run build`. Static output lands in `dist/`, with 
 
 The build creates versioned assets and a matching offline worker. It also copies the Azure Static Web Apps response and cache configuration.
 
-Deploy the contents of `dist/`. The factory manages hosting, domain setup, billing registration, and checkout.
+Deploy the contents of `dist/`. The factory manages hosting, domain setup, and release configuration.
 
 ## Project references
 
