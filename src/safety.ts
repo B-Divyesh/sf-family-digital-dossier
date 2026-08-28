@@ -71,7 +71,17 @@ export function findDossierCredentialRisks(dossier: DossierData): CredentialRisk
     );
   });
   dossier.contacts.forEach((contact, index) => {
-    fields.push({ field: `contact:${contact.id}:notes`, label: `${contact.name || `person ${index + 1}`} — notes`, value: contact.notes });
+    const person = contact.name || `person ${index + 1}`;
+    fields.push(
+      { field: `contact:${contact.id}:name`, label: `${person} — name`, value: contact.name },
+      { field: `contact:${contact.id}:role`, label: `${person} — role`, value: contact.role },
+      { field: `contact:${contact.id}:phone`, label: `${person} — phone`, value: contact.phone },
+      { field: `contact:${contact.id}:email`, label: `${person} — email`, value: contact.email },
+      { field: `contact:${contact.id}:notes`, label: `${person} — notes`, value: contact.notes },
+    );
+  });
+  dossier.reviews.forEach((review, index) => {
+    fields.push({ field: `review:${review.id}:note`, label: `review ${index + 1} — note`, value: review.note });
   });
   return fields.filter(({ value }) => looksLikeCredential(value)).map(({ field, label }) => ({ field, label }));
 }
