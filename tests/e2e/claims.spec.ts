@@ -309,7 +309,7 @@ test('@claim:uc-23 @claim:uc-24 @claim:uc-25 documentation, build outputs, polic
   expect(config.routes).toContainEqual(expect.objectContaining({ route: '/assets/*', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } }));
   expect(config.globalHeaders['Content-Security-Policy']).toContain("script-src 'self'");
   expect(config.responseOverrides['404'].statusCode).toBe(404);
-  await expect(page.getByText('We generated the original artwork for this product. Build polish-2.')).toBeVisible();
+  await expect(page.getByText('We generated the original artwork for this product. Build polish-3.')).toBeVisible();
   expect(readFileSync('.factory/design.md', 'utf8')).toContain('exact prompt above');
   expect(readFileSync('assets/src/hero-archive.json', 'utf8')).toContain('factory-image');
 });
@@ -326,4 +326,75 @@ test('@claim:uc-29 the project license is MIT', async ({ page }) => {
   await openDemo(page);
   expect(readFileSync('LICENSE', 'utf8')).toContain('MIT License');
   expect(readFileSync('README.md', 'utf8')).toContain('The project uses the MIT license.');
+});
+
+test('@claim:uc-30 deleting a real dossier removes its encrypted local envelope', async ({ page }) => {
+  const phrase = 'delete local archive meadow';
+  await openDemo(page);
+  await page.getByRole('button', { name: 'Start for real' }).click();
+  await page.locator('#new-passphrase').fill(phrase);
+  await page.locator('#confirm-passphrase').fill(phrase);
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Create encrypted dossier' }).click();
+  await expect.poll(() => idbValue(page, 'family-digital-dossier')).toEqual(expect.objectContaining({ ciphertext: expect.any(String) }));
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete this dossier' }).click();
+  await page.getByLabel('Type DELETE to confirm').fill('DELETE');
+  await page.getByRole('button', { name: 'Permanently delete dossier' }).click();
+  await expect(page.getByRole('heading', { name: 'Map essential records for someone you trust' })).toBeVisible();
+  await expect.poll(() => idbValue(page, 'family-digital-dossier')).toBeUndefined();
+});
+
+test('@claim:uc-31 the offline cache contains application resources but never a dossier', async ({ page }) => {
+  const phrase = 'cache boundary wildflower hill';
+  const marker = `cache-boundary-${Date.now()}`;
+  await openDemo(page);
+  await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
+  await page.getByRole('button', { name: 'Start for real' }).click();
+  await page.locator('#new-passphrase').fill(phrase);
+  await page.locator('#confirm-passphrase').fill(phrase);
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Create encrypted dossier' }).click();
+  await page.getByRole('button', { name: 'Add a record' }).click();
+  await page.locator('#record-title').fill(marker);
+  await page.locator('#record-locator').fill('Study safe, lower drawer');
+  await page.getByRole('button', { name: 'Add record' }).click();
+  await expect.poll(() => idbValue(page, 'family-digital-dossier')).toEqual(expect.objectContaining({ ciphertext: expect.any(String) }));
+  const envelope = JSON.stringify(await idbValue(page, 'family-digital-dossier'));
+  const cache = await page.evaluate(async () => {
+    const name = (await caches.keys()).find((item) => item.startsWith('dossier-shell-'));
+    if (!name) throw new Error('Offline application cache was not created.');
+    const store = await caches.open(name);
+    const requests = await store.keys();
+    const entries = await Promise.all(requests.map(async (request) => {
+      const response = await store.match(request);
+      const contentType = response?.headers.get('content-type') || '';
+      return {
+        url: request.url,
+        body: response && /(?:javascript|json|css|html|svg|text)/.test(contentType) ? await response.text() : '',
+      };
+    }));
+    return { urls: entries.map((entry) => entry.url), text: entries.map((entry) => entry.body).join('\n') };
+  });
+  expect(cache.urls.some((url) => new URL(url).pathname === '/')).toBe(true);
+  expect(cache.urls.some((url) => /\/assets\/hero-archive\.[\w-]+\.avif$/.test(new URL(url).pathname))).toBe(true);
+  expect(cache.urls).not.toContain(expect.stringContaining('family-digital-dossier'));
+  expect(cache.text).not.toContain(marker);
+  expect(cache.text).not.toContain(envelope);
+});
+
+test('@claim:uc-32 the dossier offers no workflow for legal documents or account authority', async ({ page }) => {
+  await openDemo(page);
+  const prohibited = /(?:create|make|generate|grant).*(?:will|trust|power of attorney|beneficiary|authority|access account)|(?:will|trust|power of attorney|beneficiary|authority|access account).*(?:create|make|generate|grant)/i;
+  for (const linkName of ['Overview', 'Records', 'People', 'Handoff plan', 'Review & print', 'Settings']) {
+    await page.getByRole('link', { name: linkName, exact: true }).click();
+    const controlText = (await page.locator('main a, main button, main input[type="submit"]').allTextContents()).join(' ');
+    expect(controlText).not.toMatch(prohibited);
+  }
+  await page.getByRole('link', { name: 'Review & print', exact: true }).click();
+  await expect(page.locator('.cover-preview')).toContainText('This dossier does not grant authority');
+  const source = readFileSync('src/main.ts', 'utf8');
+  expect(source).not.toMatch(/function\s+(?:createWill|createTrust|createPowerOfAttorney|createBeneficiaryDesignation|grantAccountAuthority)\b/);
+  expect(source).toContain('family-dossier-${today()}.encrypted.json');
+  expect(source).toContain('family-dossier-${today()}.csv');
 });

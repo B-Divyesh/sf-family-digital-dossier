@@ -19,7 +19,7 @@ let passphrase = '';
 let view: View = 'overview';
 let statusTimer = 0;
 let demoMode = false;
-const BUILD_ID = 'polish-2';
+const BUILD_ID = 'polish-3';
 const SITE_URL = 'https://family-digital-dossier.sociobot.in';
 
 const escapeHtml = (value: string | number | undefined): string => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]!);

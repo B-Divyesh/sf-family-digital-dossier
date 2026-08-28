@@ -1,4 +1,4 @@
-# Copy audit — polish round 1
+# Copy audit — polish round 3
 
 Count method: Unicode word tokens; hyphenated terms count as one. The banned-word scan covers `leverage`, `seamless`, `effortless`, `robust`, `powerful`, `intuitive`, `reimagine`, `supercharge`, `delightful`, `journey`, `ecosystem`, and `AI-powered`.
 
@@ -64,3 +64,14 @@ Every README prose sentence is at most 17 words. The longest are the review, res
 | Payment tier | none |
 
 Implementation names such as IndexedDB, AES-256-GCM, and PBKDF2-SHA-256 appear only in technical or privacy explanations.
+
+## Legal-route changes in round 3
+
+| Route | Words | Copy | Claim coverage |
+| --- | ---: | --- | --- |
+| Privacy | 14 | Settings → Delete this dossier removes the encrypted local copy. | UC-30 |
+| Privacy | 17 | The service worker caches application resources, including the illustration, so the app opens without a connection. | UC-31 |
+| Privacy | 9 | Your dossier records are not placed in the cache. | UC-31 |
+| Terms | 18 | The app has no workflow that creates a will, trust, power of attorney, beneficiary designation, or account authority. | UC-32 |
+
+The untestable hosting-log statement and browser-site-data deletion statement were removed. The legal-route additions are below 22 words and use no banned marketing terms.

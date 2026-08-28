@@ -180,5 +180,26 @@
     "where": "README",
     "test": "npm run test:claims -- --grep @claim:uc-29",
     "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-30",
+    "claim": "Deleting a dossier in Settings removes its encrypted local copy.",
+    "where": "privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-30",
+    "sandbox": "fresh Chromium context opened at /?demo=1; create a real encrypted fixture, delete it in Settings, and inspect vault/primary"
+  },
+  {
+    "id": "uc-31",
+    "claim": "The offline cache stores application resources, including the illustration, but not dossier records.",
+    "where": "privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-31",
+    "sandbox": "fresh Chromium context opened at /?demo=1; save a unique real record, enumerate Cache Storage, and compare it with IndexedDB"
+  },
+  {
+    "id": "uc-32",
+    "claim": "The app has no workflow that creates legal documents or account authority.",
+    "where": "terms",
+    "test": "npm run test:claims -- --grep @claim:uc-32",
+    "sandbox": "fresh Chromium context opened at /?demo=1; inspect every product section, controls, generated cover, and output implementation"
   }
 ]
