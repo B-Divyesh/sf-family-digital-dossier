@@ -19,9 +19,14 @@ test('creates, locks, unlocks, and edits a private dossier', async ({ page }) =>
   await page.locator('#passphrase').fill('orchid river archive lantern');
   await page.getByRole('button', { name: 'Unlock dossier' }).click();
   await expect(page.getByRole('heading', { name: 'Life insurance' })).toBeVisible();
+  await page.addScriptTag({ content: axe.source });
+  const results = await page.evaluate(async () => (window as unknown as Window & { axe: typeof axe }).axe.run());
+  expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);
 });
 
 test('has no serious accessibility violations on first load', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   await page.goto('/');
   await page.addScriptTag({ content: axe.source });
   const results = await page.evaluate(async () => {
@@ -29,6 +34,14 @@ test('has no serious accessibility violations on first load', async ({ page }) =
     return runner.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } });
   });
   expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test('fits the 390px mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await expect(page.getByRole('button', { name: 'Create encrypted dossier' })).toBeVisible();
 });
 
 test('loads the installed shell offline after a warm visit', async ({ page, context }) => {
