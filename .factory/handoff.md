@@ -1,48 +1,27 @@
-# Family Digital Dossier — build handoff
+# Family Digital Dossier — independent verification handoff
 
-## What shipped
+## Status: FAIL
 
-- A responsive, installable offline PWA for creating a practical family record locator rather than a password vault.
-- AES-256-GCM client-side encryption with PBKDF2-SHA-256 (310,000 iterations), a no-recovery passphrase model, and one encrypted IndexedDB envelope.
-- Record, renewal, safe-reference, contact, jurisdiction, document-location, and first-hour instruction workflows with useful empty and error states.
-- A completion map, configurable review interval, visible review history, and three-record findability drill aligned to the success measure.
-- Free encrypted JSON backup/import, readable CSV export with a security warning, passphrase rotation, confirmed local deletion, and sealed-cover printing.
-- One-time Dossier Plus integration at `https://api.sociobot.in/api/v1/products/family-digital-dossier/...`: hosted checkout, query-token capture, daily verification cache, offline cached verdict, paste-to-restore, revoked-license handling, starter templates, and full-packet printing. No product ID is hardcoded.
-- `/privacy/` and `/terms/`, MIT license, manifest, maskable icon, service worker with versioned precache/update notice, and a dedicated offline fallback.
-- A product-specific “sealed constellation” design system and an original generated paper-archive hero. Source, exact prompt, generator, review notes, and optimized AVIF/WebP/JPEG derivatives are retained.
+Candidate `b3fe756dd7862f073eb6aa9999b4164982591e5b` was independently verified on 2026-08-28 against <https://family-digital-dossier.sociobot.in/>. The live deployment is byte-identical to the candidate for the checked app shell, JS, CSS, service worker, legal pages, and offline page; this is **not** a deployment-only failure.
 
-## How to run and verify
+The candidate must not ship yet:
+
+- `npm test` fails because the required warm-cache offline reload Playwright test fails; a direct single-worker retry fails and repeat runs are flaky.
+- The record locator accepts and persists `password=DemoSecret_42!`, violating the brief's no-credentials-by-design constraint and the product's no-password-storage promise.
+- The deployed sensitive app lacks CSP and Permissions-Policy, and every checked static resource has only `Cache-Control: public, must-revalidate, max-age=30` rather than an immutable hashed-asset policy.
+
+What passed: clean `npm ci`; `npx tsc --noEmit`; unit encryption tests; exact `npm run build`; production bundle budgets; zero high audit vulnerabilities; normal create/save/lock/unlock/edit path; encrypted JSON export (no entered locator plaintext); free sealed-cover print command; desktop/390px keyboard and reduced-motion smoke checks; live axe with zero serious/critical findings; and no clean-landing console/page errors or third-party requests.
+
+See [.factory/verification.md](verification.md) for commands, exact evidence, live identity hashes, full severity list, and required remediation. No product code was modified during verification.
+
+## How to reproduce
 
 ```sh
 npm ci
+npx tsc --noEmit
 npm test
 npm run build
+npx playwright test tests/e2e/app.spec.ts --grep 'offline' --workers=1
 ```
 
-The exact deployment build command is `npm run build`. Output lands in `dist/`, with `dist/index.html` at its root.
-
-Automated verification on 2026-08-28:
-
-- `npx tsc --noEmit`: passed.
-- `npm test`: passed (unit encryption tests, production build, four Chromium checks).
-- Playwright 1.58.2: encrypted create/save/lock/unlock and persistence passed; axe found zero serious/critical WCAG A/AA violations on landing and unlocked record screens; 390px had no horizontal overflow; offline warm-cache navigation passed with `context.setOffline(true)`.
-- `npm audit`: zero vulnerabilities.
-- Production bundle: initial app JavaScript 43.83 KB raw / 12.92 KB gzip; CSS 11.61 KB raw / 3.53 KB gzip. No runtime fonts. Hero is 27 KB AVIF, 57 KB WebP, 71 KB JPEG.
-- Lighthouse 12.8.2 mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.3 s, CLS 0, TBT 0 ms, total transfer 52 KiB.
-- Lighthouse 12.8.2 desktop: Performance 100, Accessibility 100, Best Practices 100, SEO 92 before crawl metadata was added; measured LCP 0.3 s, CLS 0, TBT 0 ms. The later mobile run confirms the canonical/robots fix at SEO 100.
-- Manual 390 × 844 visual inspection: readable, stacked controls, no horizontal overflow, and safe spacing around the sticky-free layout.
-
-## Privacy and security notes
-
-- No dossier content, passphrase, analytics, third-party font, or tracking script leaves the device.
-- The passphrase lives in JavaScript memory only while unlocked. There is intentionally no reset, escrow, or vendor recovery route.
-- CSV and print are deliberately readable exports; warnings put their storage and physical security under user control.
-- The only product API traffic is license verification when a token exists. Payment details stay with the Sociobot / Dodo hosted checkout.
-
-## Known gaps and next steps
-
-- The factory must register the billing product, price/return URL, and production checkout before paid unlock can complete. The UI currently states the chosen one-time ₹799 price.
-- There is intentionally no cloud sync, multi-device merge, scheduled notification service, or remote recovery. Transfer uses an encrypted backup.
-- The app explains that laws differ but does not automate jurisdiction-specific legal advice. Local professional review remains the user’s responsibility.
-- Browser storage can be cleared by the user or OS; onboarding and Settings therefore emphasize encrypted backups.
-- Run a real family recipient usability session against the “locate three records” measure after deployment, then refine copy without weakening the no-credentials boundary.
+The last two test commands demonstrate the blocking PWA failure on this candidate.
