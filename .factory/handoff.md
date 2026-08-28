@@ -1,3 +1,23 @@
+# Family Digital Dossier — verification handoff
+
+## Independent verifier verdict: PASS
+
+Work order `family-digital-dossier-verify-2` independently passed candidate `ff501ce5046036a8b6420c1a70f5296210e0471f` at <https://family-digital-dossier.sociobot.in/> on 2026-08-28. This is a fresh clean-checkout verification and supersedes the earlier failure for pre-repair candidate `b3fe756`.
+
+No product code was changed. The full evidence is in [`.factory/verification-2.md`](verification-2.md): clean install/audit, TypeScript, ESLint, 14 unit tests, production build, 8 E2E tests, 10/10 offline repetitions, PWA installability and live offline reload, encrypted product workflow, accessibility/privacy/security checks, bundle budget, Lighthouse, response policies, and byte-for-byte live deployment identity.
+
+**Defects: none found (P0–P3).** The external Sociobot/Dodo purchase transaction was not completed; free functionality, license-restoration UI, documented API boundary, and no-token startup were checked.
+
+## Re-verify
+
+```sh
+npm ci
+npm test
+npx playwright test tests/e2e/app.spec.ts --grep 'loads the installed shell offline' --workers=1 --repeat-each=10
+```
+
+---
+
 # Family Digital Dossier — repair handoff
 
 ## Status: PASS
