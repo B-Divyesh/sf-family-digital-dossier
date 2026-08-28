@@ -1031,6 +1031,22 @@ dialog::backdrop {
   .cover-inner {
     margin: 24px auto;
   }
+  .side-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  .nav-button {
+    min-height: 46px;
+    justify-content: center;
+    padding: 8px 5px;
+    text-align: center;
+    white-space: normal;
+    font-size: .8rem;
+    line-height: 1.2;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

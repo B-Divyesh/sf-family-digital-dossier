@@ -153,6 +153,13 @@ test('keeps legal navigation and layout usable at 390px', async ({ page }) => {
   await expect(nav.getByRole('link', { name: 'Privacy' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Terms' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await page.goto('/?demo=1');
+  const sectionNav = page.getByRole('navigation', { name: 'Dossier sections' });
+  await expect(sectionNav.getByRole('link')).toHaveCount(6);
+  const mobileNav = await sectionNav.evaluate((element) => ({ clientWidth: element.clientWidth, scrollWidth: element.scrollWidth }));
+  expect(mobileNav.scrollWidth).toBe(mobileNav.clientWidth);
+  for (const item of await sectionNav.getByRole('link').all()) await expect(item).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
 
 test('ships complete route metadata and accessible demo, legal, and not-found pages', async ({ page }) => {
