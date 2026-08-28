@@ -29,7 +29,7 @@ Automated verification on 2026-08-28:
 - `npm audit`: zero vulnerabilities.
 - Production bundle: initial app JavaScript 43.83 KB raw / 12.92 KB gzip; CSS 11.61 KB raw / 3.53 KB gzip. No runtime fonts. Hero is 27 KB AVIF, 57 KB WebP, 71 KB JPEG.
 - Lighthouse 12.8.2 mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.3 s, CLS 0, TBT 0 ms, total transfer 52 KiB.
-- Lighthouse 12.8.2 desktop: Performance 100, Accessibility 100, Best Practices 100, SEO 100 after canonical/robots additions; measured LCP 0.3 s, CLS 0, TBT 0 ms.
+- Lighthouse 12.8.2 desktop: Performance 100, Accessibility 100, Best Practices 100, SEO 92 before crawl metadata was added; measured LCP 0.3 s, CLS 0, TBT 0 ms. The later mobile run confirms the canonical/robots fix at SEO 100.
 - Manual 390 × 844 visual inspection: readable, stacked controls, no horizontal overflow, and safe spacing around the sticky-free layout.
 
 ## Privacy and security notes
