@@ -1,9 +1,9 @@
 {
   "name": "Family Digital Dossier",
   "short_name": "Dossier",
-  "description": "An encrypted offline locator for essential family records.",
+  "description": "An encrypted guide to essential family records that works offline.",
   "id": "/",
-  "start_url": "/?source=installed&v=2",
+  "start_url": "/?source=installed&v=3",
   "display": "standalone",
   "background_color": "#F5F0E6",
   "theme_color": "#F5F0E6",

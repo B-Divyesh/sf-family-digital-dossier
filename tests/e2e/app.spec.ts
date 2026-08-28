@@ -13,7 +13,7 @@ test('creates, locks, unlocks, and edits a private dossier', async ({ page }) =>
   await page.locator('#record-title').fill('Life insurance');
   await page.locator('#record-locator').fill('Fire safe, blue folder');
   await page.getByRole('button', { name: 'Add record' }).click();
-  await page.getByRole('button', { name: 'Records', exact: true }).click();
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Life insurance' })).toBeVisible();
   await page.getByRole('button', { name: 'Lock' }).click();
   await page.locator('#passphrase').fill('orchid river archive lantern');
@@ -64,7 +64,7 @@ test('supports keyboard skip navigation', async ({ page }) => {
 test('removes interface motion when reduced motion is requested', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  const duration = await page.getByRole('link', { name: 'Create my dossier' }).evaluate((element) => Number.parseFloat(getComputedStyle(element).transitionDuration));
+  const duration = await page.getByRole('link', { name: 'Try it with sample data' }).first().evaluate((element) => Number.parseFloat(getComputedStyle(element).transitionDuration));
   expect(duration).toBeLessThanOrEqual(0.00001);
 });
 
@@ -83,7 +83,7 @@ test('blocks credential-like locator text before it is persisted', async ({ page
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.locator('#record-locator').fill('Fire safe, blue folder');
   await page.getByRole('button', { name: 'Add record' }).click();
-  await page.getByRole('button', { name: 'Records', exact: true }).click();
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Life insurance' })).toBeVisible();
   await expect(page.getByText('password=DemoSecret_42!')).toHaveCount(0);
 });
@@ -118,8 +118,49 @@ test('loads the installed shell offline after a warm visit', async ({ page, cont
   await expect.poll(() => page.evaluate(async () => (await fetch('/manifest.webmanifest')).ok)).toBe(true);
   const offlinePage = await context.newPage();
   await offlinePage.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(offlinePage.getByRole('heading', { name: 'Leave a map. Keep the keys.' })).toBeVisible({ timeout: 5_000 });
+  await expect(offlinePage.getByRole('heading', { name: 'Map essential records for someone you trust' })).toBeVisible({ timeout: 5_000 });
   await expect(offlinePage.getByText(/You’re offline/)).toBeVisible({ timeout: 5_000 });
   await offlinePage.reload({ waitUntil: 'domcontentloaded' });
-  await expect(offlinePage.getByRole('heading', { name: 'Leave a map. Keep the keys.' })).toBeVisible({ timeout: 5_000 });
+  await expect(offlinePage.getByRole('heading', { name: 'Map essential records for someone you trust' })).toBeVisible({ timeout: 5_000 });
+});
+
+test('uses real routes, titles, focus restoration, and a designed not-found screen', async ({ page }) => {
+  await page.goto('/?demo=1');
+  await page.getByRole('link', { name: 'Records', exact: true }).click();
+  await expect(page).toHaveURL(/\/demo\/records$/);
+  await expect(page).toHaveTitle('Records — Family Digital Dossier');
+  await expect(page.getByRole('heading', { level: 1, name: 'Essential records' })).toBeFocused();
+  await page.getByRole('link', { name: 'People', exact: true }).click();
+  await expect(page).toHaveURL(/\/demo\/people$/);
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1, name: 'Essential records' })).toBeFocused();
+  await page.goto('/definitely-not-a-real-route');
+  await expect(page.getByRole('heading', { level: 1, name: 'This record route is missing' })).toBeVisible();
+  await expect(page).toHaveTitle('Page not found — Family Digital Dossier');
+});
+
+test('keeps legal navigation and layout usable at 390px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Site' });
+  await expect(nav.getByRole('link', { name: 'Privacy' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Terms' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+test('ships complete route metadata and accessible demo, legal, and not-found pages', async ({ page }) => {
+  for (const route of ['/?demo=1', '/privacy/', '/terms/', '/definitely-not-a-real-route']) {
+    await page.goto(route);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('main')).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
+    await expect(page.locator('meta[property="og:image"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+    await page.addScriptTag({ content: axe.source });
+    const results = await page.evaluate(async () => (window as unknown as Window & { axe: typeof axe }).axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } }));
+    expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact || '')), route).toEqual([]);
+  }
 });

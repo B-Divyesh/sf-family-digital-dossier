@@ -11,8 +11,9 @@ const securityHeaders = {
 };
 
 const publicShell = [
-  '/', '/privacy/', '/terms/', '/offline.html', '/manifest.webmanifest',
+  '/', '/privacy/', '/terms/', '/404.html', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/apple-touch-icon.png',
   '/assets/hero-archive.a969e117.avif', '/assets/hero-archive.616a017b.webp', '/assets/hero-archive.19baff82.jpg',
+  '/assets/social-card.jpg',
   '/assets/icon-192.a8387931.png', '/assets/icon-512.bb33bb12.png', '/assets/icon-maskable.81a05710.png',
 ];
 
@@ -71,7 +72,7 @@ self.addEventListener('fetch', (event) => {
       if (response.ok) await cache.put(event.request, response.clone());
       return response;
     } catch {
-      if (event.request.mode === 'navigate') return (await cache.match('/offline.html')) || Response.error();
+      if (event.request.mode === 'navigate') return (await cache.match('/')) || (await cache.match('/offline.html')) || Response.error();
       return Response.error();
     }
   })());
@@ -92,6 +93,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: 'index.html',
+        notFound: '404.html',
         privacy: 'privacy/index.html',
         terms: 'terms/index.html',
       },

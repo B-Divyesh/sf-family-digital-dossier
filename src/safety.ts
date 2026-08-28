@@ -67,7 +67,7 @@ export function findDossierCredentialRisks(dossier: DossierData): CredentialRisk
       { field: `entry:${entry.id}:institution`, label: `${record} — institution`, value: entry.institution },
       { field: `entry:${entry.id}:locator`, label: `${record} — location`, value: entry.locator },
       { field: `entry:${entry.id}:reference`, label: `${record} — safe reference`, value: entry.reference },
-      { field: `entry:${entry.id}:instructions`, label: `${record} — locator notes`, value: entry.instructions },
+      { field: `entry:${entry.id}:instructions`, label: `${record} — location notes`, value: entry.instructions },
     );
   });
   dossier.contacts.forEach((contact, index) => {

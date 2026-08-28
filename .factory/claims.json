@@ -1,0 +1,177 @@
+[
+  {
+    "id": "uc-01",
+    "claim": "Dossier fields stay on the device and are not sent to another company.",
+    "where": "landing and privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-01",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-02",
+    "claim": "Dossier data is saved only on this device, and sample data uses isolated storage.",
+    "where": "landing, README, demo banner",
+    "test": "npm run test:claims -- --grep @claim:uc-02",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-03",
+    "claim": "The passphrase encrypts the dossier before browser storage.",
+    "where": "landing and README",
+    "test": "npm run test:claims -- --grep @claim:uc-03",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-04",
+    "claim": "The service cannot see or recover the encrypted dossier.",
+    "where": "landing and privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-04",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-05",
+    "claim": "The app has no tracking.",
+    "where": "privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-05",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-06",
+    "claim": "The app works offline after the first visit.",
+    "where": "landing and README",
+    "test": "npm run test:claims -- --grep @claim:uc-06",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-07",
+    "claim": "Family Digital Dossier is an encrypted offline guide to essential family records.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-07",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-08",
+    "claim": "The dossier records locations, trusted people, and first steps without accepting passwords.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-08",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-09",
+    "claim": "Dossier content uses AES-256-GCM with a PBKDF2-SHA-256 passphrase-derived key.",
+    "where": "README technical note",
+    "test": "npm run test:claims -- --grep @claim:uc-09",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-10",
+    "claim": "The dossier stores institutions, locations, reference names, renewal dates, contacts, and first steps.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-10",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-11",
+    "claim": "The dossier schedules reviews, keeps review history, and runs a three-record location drill.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-11",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-12",
+    "claim": "The dossier prints a sealed cover and exports encrypted backup or readable spreadsheet files.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-12",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-13",
+    "claim": "The dossier restores backups, changes passphrases, works offline, and is installable.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-13",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-14",
+    "claim": "The dossier rejects likely secrets and blocks readable output if legacy data contains one.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-14",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-15",
+    "claim": "Dossier Plus costs ₹799 once and adds starter checklists and full handoff printing.",
+    "where": "landing, settings, terms",
+    "test": "npm run test:claims -- --grep @claim:uc-15",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-16",
+    "claim": "Encryption, reviews, cover printing, and exports remain free.",
+    "where": "landing and README",
+    "test": "npm run test:claims -- --grep @claim:uc-16",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-17",
+    "claim": "The browser stores one encrypted dossier envelope in IndexedDB.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-17",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-18",
+    "claim": "The user passphrase stays in memory and is never stored or sent.",
+    "where": "README and privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-18",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-19",
+    "claim": "There is no account or recovery reset, and a wrong passphrase cannot decrypt a dossier.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-19",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-20",
+    "claim": "Spreadsheet exports and printed pages are readable and not encrypted.",
+    "where": "README and privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-20",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-21",
+    "claim": "The app has no analytics, third-party scripts, or remote fonts.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-21",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-22",
+    "claim": "The app calls only the Sociobot license service after a license is added, at most once daily.",
+    "where": "README and privacy",
+    "test": "npm run test:claims -- --grep @claim:uc-22",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-23",
+    "claim": "npm test runs type checks, lint, unit tests, a build, and browser checks.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-23",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-24",
+    "claim": "The build emits versioned assets, a matching service worker, and Azure response policies.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:uc-24",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  },
+  {
+    "id": "uc-25",
+    "claim": "Generated imagery is disclosed and its source and prompt are recorded.",
+    "where": "README, footer, design record",
+    "test": "npm run test:claims -- --grep @claim:uc-25",
+    "sandbox": "fresh Chromium context opened at /?demo=1; assertions are described in the tagged test"
+  }
+]

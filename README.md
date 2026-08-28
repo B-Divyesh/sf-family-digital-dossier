@@ -1,32 +1,37 @@
 # Family Digital Dossier
 
-Family Digital Dossier is an encrypted, offline-first locator for essential family records. It helps an adult tell a trusted person what exists, where to find it, who can help, and what to do first during illness or death—without storing passwords or copying a whole password vault.
+Family Digital Dossier stores an encrypted guide to essential family records on your device. It works offline after the first visit.
 
-Live: <https://family-digital-dossier.sociobot.in>
+Open the [live app](https://family-digital-dossier.sociobot.in) or [try the sample dossier](https://family-digital-dossier.sociobot.in/?demo=1).
 
 ## Who it is for
 
-It is for people preparing a practical handoff to family, an executor, or another trusted contact. It is not a password manager, will, power of attorney, automated account-access service, or source of legal advice.
+It is for adults preparing records for family, an executor, or another trusted person. It does not store passwords, create legal documents, access accounts, or give legal advice.
 
 ## What it does
 
-- Encrypts all dossier content locally with AES-256-GCM and a passphrase-derived key.
-- Maps institutions, record locations, safe reference labels, renewal dates, contacts, and first-hour instructions.
-- Creates a six-month review checklist, durable review history, and three-record findability drill.
-- Prints a sealed cover sheet and exports an encrypted JSON backup or explicitly unencrypted CSV.
-- Imports backups, rotates passphrases, works offline after first load, and can be installed as a PWA.
-- Rejects credential-shaped values at entry and import, and blocks readable export/printing if an older dossier still contains one.
-- Offers a one-time Dossier Plus license for starter templates and full handoff packet printing. Core safety and data ownership features remain free.
+- Encrypts dossier content on this device with a key created from your passphrase. The technical method is AES-256-GCM with PBKDF2-SHA-256.
+- Records institutions, document locations, reference names, renewal dates, contacts, and what family should do first.
+- Schedules a review every six months, keeps past reviews, and checks whether someone can find three records.
+- Prints a sealed cover sheet. Exports an encrypted backup or a readable spreadsheet.
+- Restores backups, changes passphrases, works offline after the first visit, and can be installed on a device.
+- Rejects text that resembles a password or recovery code. Blocks readable exports until detected secrets are removed.
+- Offers Dossier Plus for ₹799 once. Plus adds starter checklists and prints every handoff page at once.
+- Keeps encryption, reviews, cover printing, and both exports free.
 
-## Privacy and recovery model
+## Privacy and lost passphrases
 
-The dossier is stored as one encrypted envelope in browser IndexedDB. The passphrase is held only in memory while unlocked and is never stored or transmitted. There is no account and no recovery bypass: losing both the passphrase and a usable unlocked device means the dossier cannot be recovered. Keep an encrypted backup and arrange for the right person to receive the passphrase separately at the right time.
+The browser stores one encrypted copy of the dossier in an IndexedDB database on this device. Demo data uses a separate `demo:family-digital-dossier` database.
 
-Readable CSV exports and printed pages are not encrypted. Users control their storage and physical security. The app has no analytics, third-party scripts, or remote fonts. License verification is the only product API call, and only occurs when a license token exists.
+The passphrase stays in memory only while the dossier is open. It is never stored or sent. There is no account or recovery reset. If you lose every usable passphrase copy, you lose the dossier.
+
+Keep an encrypted backup. Arrange for the right person to receive the passphrase separately. Spreadsheet exports and printed pages are readable and not encrypted. Protect exported files and printed pages.
+
+The app has no analytics, third-party scripts, or remote fonts. It contacts the Sociobot licensing service only after you add a license. That check happens at most once per day.
 
 ## Develop and verify
 
-Requires Node.js 20 or newer.
+Use Node.js 20 or newer.
 
 ```sh
 npm ci
@@ -34,21 +39,29 @@ npm run dev
 npm test
 ```
 
-`npm test` runs type checking, ESLint, unit encryption/safety tests, makes a production build, and runs Playwright interaction, accessibility, response-policy, mobile, keyboard, and offline checks. Playwright is pinned to 1.58.2. Individual gates are also available as `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run test:e2e`.
+`npm test` runs type checks, linting, unit tests, and a production build. It then runs browser, accessibility, mobile, keyboard, privacy, and offline checks.
 
-The exact production build command is:
+Playwright is pinned to 1.58.2. Run checks separately with `npm run typecheck`, `npm run lint`, `npm run test:unit`, or `npm run test:e2e`.
+
+Run all public claim checks with:
 
 ```sh
-npm run build
+npm run test:claims
 ```
 
-Static output lands in `dist/` with `dist/index.html` at its root. Preview it with `npm run preview`. The build emits content-hashed assets, a version-matched service worker, and `staticwebapp.config.json` with the response and cache policies used by Azure Static Web Apps. Deploy the contents of `dist/`; infrastructure, DNS, billing product registration, and checkout configuration are managed by the factory.
+The production command is `npm run build`. Static output lands in `dist/`, with `dist/index.html` at its root.
+
+The build creates versioned assets and a matching offline worker. It also copies the Azure Static Web Apps response and cache configuration.
+
+Deploy the contents of `dist/`. The factory manages hosting, domain setup, billing registration, and checkout.
 
 ## Project references
 
 - [Product brief](.factory/brief.json)
-- [Visual system and asset provenance](.factory/design.md)
+- [Sample dossier contract](.factory/demo.md)
+- [Tested public claims](.factory/claims.json)
+- [Visual design and image sources](.factory/design.md)
 - [Privacy policy](privacy/index.html)
 - [Terms](terms/index.html)
 
-MIT licensed. Generated imagery is disclosed in the product footer and documented with its prompt and generator in `.factory/design.md` and `assets/src/`.
+The project uses the MIT license. The footer discloses generated imagery. Its prompt and generator are recorded in `.factory/design.md` and `assets/src/`.
