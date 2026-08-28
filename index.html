@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F5F0E6" />
+    <meta name="description" content="Create an encrypted, offline map of essential family records—without storing passwords." />
+    <link rel="canonical" href="https://family-digital-dossier.sociobot.in/" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/assets/icon-192.png" />
+    <link rel="preload" as="image" href="/assets/hero-archive.avif" type="image/avif" />
+    <title>Family Digital Dossier — a map for the people you trust</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div id="offline-banner" class="network-banner" role="status" hidden>You’re offline. Your saved dossier still works on this device.</div>
+    <div id="app"></div>
+    <div id="status" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

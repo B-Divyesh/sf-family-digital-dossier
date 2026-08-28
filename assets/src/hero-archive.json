@@ -1,0 +1,7 @@
+{
+  "generator": "factory Azure image deployment (factory-image)",
+  "date": "2026-08-28",
+  "use_case": "stylized-concept",
+  "prompt": "Use case: stylized-concept. Asset type: landing page hero illustration. An abstract isometric family archive made of seven interlocking folded-paper envelopes and document tabs connected by thin precise routes, with one small vermilion wax-seal circle representing trusted handoff. Quiet warm paper field. Tactile editorial paper sculpture plus exact generative geometry, slight screen-print grain, sophisticated and reassuring. Landscape composition, visual mass centered and right-biased with breathing space, no interface mockup. Soft top-left studio light, calm morning mood. Warm ivory, archival navy, muted teal, ochre, vermilion accent. Thick cotton paper, embossed lines, crisp folded edges. No people, no hands, no keys, no padlocks, no screens, no gradients, no photoreal office clutter, no symbols resembling brands, no text, no letters, no numbers, no watermark, no logos.",
+  "review": "Accepted: no people, text, logos, brands, malformed geometry, or unintended security claims."
+}
