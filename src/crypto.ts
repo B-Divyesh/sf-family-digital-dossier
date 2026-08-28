@@ -64,7 +64,7 @@ export async function decryptDossier(envelope: EncryptedEnvelope, passphrase: st
     return value;
   } catch (error) {
     if (error instanceof Error && (error.message.includes('format') || error.message.includes('incomplete'))) throw error;
-    throw new Error('That passphrase did not unlock this dossier. Check it and try again.');
+    throw new Error('That passphrase did not unlock this dossier. Check it and try again.', { cause: error });
   }
 }
 

@@ -15,6 +15,7 @@ It is for people preparing a practical handoff to family, an executor, or anothe
 - Creates a six-month review checklist, durable review history, and three-record findability drill.
 - Prints a sealed cover sheet and exports an encrypted JSON backup or explicitly unencrypted CSV.
 - Imports backups, rotates passphrases, works offline after first load, and can be installed as a PWA.
+- Rejects credential-shaped values at entry and import, and blocks readable export/printing if an older dossier still contains one.
 - Offers a one-time Dossier Plus license for starter templates and full handoff packet printing. Core safety and data ownership features remain free.
 
 ## Privacy and recovery model
@@ -33,7 +34,7 @@ npm run dev
 npm test
 ```
 
-`npm test` runs unit encryption tests, makes a production build, and runs Playwright interaction, accessibility, and offline checks. Playwright is pinned to 1.58.2.
+`npm test` runs type checking, ESLint, unit encryption/safety tests, makes a production build, and runs Playwright interaction, accessibility, response-policy, mobile, keyboard, and offline checks. Playwright is pinned to 1.58.2. Individual gates are also available as `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run test:e2e`.
 
 The exact production build command is:
 
@@ -41,7 +42,7 @@ The exact production build command is:
 npm run build
 ```
 
-Static output lands in `dist/` with `dist/index.html` at its root. Preview it with `npm run preview`. Deploy the contents of `dist/`; infrastructure, DNS, billing product registration, and checkout configuration are managed by the factory.
+Static output lands in `dist/` with `dist/index.html` at its root. Preview it with `npm run preview`. The build emits content-hashed assets, a version-matched service worker, and `staticwebapp.config.json` with the response and cache policies used by Azure Static Web Apps. Deploy the contents of `dist/`; infrastructure, DNS, billing product registration, and checkout configuration are managed by the factory.
 
 ## Project references
 

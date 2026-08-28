@@ -7,15 +7,16 @@
     <meta name="description" content="Create an encrypted, offline map of essential family records—without storing passwords." />
     <link rel="canonical" href="https://family-digital-dossier.sociobot.in/" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/assets/icon-192.png" />
-    <link rel="preload" as="image" href="/assets/hero-archive.avif" type="image/avif" />
+    <link rel="icon" href="/assets/icon-192.a8387931.png" />
+    <link rel="preload" as="image" href="/assets/hero-archive.a969e117.avif" type="image/avif" />
     <title>Family Digital Dossier — a map for the people you trust</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
-    <div id="offline-banner" class="network-banner" role="status" hidden>You’re offline. Your saved dossier still works on this device.</div>
-    <div id="app"></div>
+    <div id="offline-banner" class="network-banner" role="status">You’re offline. Your saved dossier still works on this device.</div>
+    <div id="app"><main id="main" class="initial-shell" tabindex="-1"><section><p class="eyebrow">Private continuity record</p><h1>Leave a map. Keep the keys.</h1><p>Opening your encrypted, offline dossier on this device…</p><noscript><p>JavaScript is required to encrypt and use the dossier locally.</p></noscript></section></main></div>
     <div id="status" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="/src/network.ts"></script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

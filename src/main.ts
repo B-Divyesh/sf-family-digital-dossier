@@ -2,12 +2,12 @@ import './styles.css';
 import { decryptDossier, encryptDossier, isEncryptedEnvelope, type EncryptedEnvelope } from './crypto';
 import { deleteEnvelope, readEnvelope, writeEnvelope } from './db';
 import { BUY_URL, cachedLicenseState, captureLicenseFromUrl, storeLicense, verifyLicense, type LicenseState } from './license';
+import { CREDENTIAL_ERROR, findDossierCredentialRisks, firstCredentialRisk, looksLikeCredential } from './safety';
 import { CATEGORIES, createEmptyDossier, type DossierData, type DossierEntry, type TrustedContact } from './types';
 
 type View = 'overview' | 'records' | 'people' | 'plan' | 'review' | 'settings';
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const statusRegion = document.querySelector<HTMLDivElement>('#status')!;
-const offlineBanner = document.querySelector<HTMLDivElement>('#offline-banner')!;
 let envelope: EncryptedEnvelope | undefined;
 let dossier: DossierData | undefined;
 let passphrase = '';
@@ -27,10 +27,28 @@ function showStatus(message: string): void {
   statusTimer = window.setTimeout(() => { statusRegion.hidden = true; }, 4500);
 }
 
-function setNetworkState(): void { offlineBanner.hidden = navigator.onLine; }
-window.addEventListener('online', setNetworkState);
-window.addEventListener('offline', setNetworkState);
-setNetworkState();
+function rejectCredentialLikeInput(form: HTMLFormElement, fields: Array<{ field: string; label: string; value: string }>, errorId: string): boolean {
+  form.querySelectorAll('[aria-invalid="true"]').forEach((control) => control.removeAttribute('aria-invalid'));
+  const error = form.querySelector<HTMLElement>(`#${errorId}`)!;
+  const risk = firstCredentialRisk(fields);
+  if (!risk) { error.textContent = ''; error.className = ''; return false; }
+  error.className = 'error';
+  error.textContent = `${risk.label}: ${CREDENTIAL_ERROR}`;
+  const control = form.elements.namedItem(risk.field);
+  if (control instanceof HTMLElement) { control.setAttribute('aria-invalid', 'true'); control.focus(); }
+  return true;
+}
+
+function allowReadableOutput(): boolean {
+  const risks = dossier ? findDossierCredentialRisks(dossier) : [];
+  if (!risks.length) return true;
+  showStatus(`Remove credential-like content from ${risks[0].label} before printing or exporting.`);
+  return false;
+}
+
+function safeReadableText(value: string, fallback = ''): string {
+  return escapeHtml(looksLikeCredential(value) ? '[Credential-like content hidden — edit and remove it]' : (value || fallback));
+}
 
 function siteHeader(appMode = false): string {
   return `<header class="site-header${appMode ? ' app-header' : ''}">
@@ -45,12 +63,12 @@ function footer(): string {
 
 function renderWelcome(error = ''): void {
   if (envelope) { renderUnlock(error); return; }
-  app.innerHTML = `${siteHeader()}<main id="main" class="landing-main">
+  app.innerHTML = `${siteHeader()}<main id="main" class="landing-main" tabindex="-1">
     <section class="hero"><div class="hero-copy"><p class="eyebrow">Findability without full access</p><h1>Leave a map. Keep the keys.</h1>
       <p class="lede">Give someone you trust a clear route to essential records during illness or death—without putting passwords, documents, or account access in another company’s cloud.</p>
       <div class="actions"><a class="button primary" href="#start">Create my dossier</a><a class="button" href="#how">See what it stores</a></div>
       <div class="safety-note"><span aria-hidden="true">◆</span><div><strong>Never enter a password or recovery code.</strong><span class="small">Record what exists, where it is, and who to contact.</span></div></div>
-    </div><div class="hero-art"><picture><source srcset="/assets/hero-archive.avif" type="image/avif"><source srcset="/assets/hero-archive.webp" type="image/webp"><img src="/assets/hero-archive.jpg" width="1280" height="853" alt="Seven paper record envelopes connected by orderly routes to a central sealed dossier" fetchpriority="high" decoding="async"></picture></div></section>
+    </div><div class="hero-art"><picture><source srcset="/assets/hero-archive.a969e117.avif" type="image/avif"><source srcset="/assets/hero-archive.616a017b.webp" type="image/webp"><img src="/assets/hero-archive.19baff82.jpg" width="1280" height="853" alt="Seven paper record envelopes connected by orderly routes to a central sealed dossier" fetchpriority="high" decoding="async"></picture></div></section>
     <section id="how" class="principles"><div class="principles-inner"><p class="eyebrow">A locator, deliberately limited</p><h2>Three things your family needs</h2><div class="principles-grid">
       <div><span class="principle-number">01</span><h3>What exists</h3><p>List institutions, policies, important online accounts, legal files, and renewals.</p></div>
       <div><span class="principle-number">02</span><h3>Where to look</h3><p>Point to a safe, filing cabinet, adviser, or vault item—never copy the secret itself.</p></div>
@@ -111,9 +129,10 @@ const navItems: Array<[View, string]> = [['overview', 'Overview'], ['records', '
 function renderDossier(): void {
   if (!dossier) return;
   const progress = dossierProgress();
+  const risks = findDossierCredentialRisks(dossier);
   app.innerHTML = `${siteHeader(true)}<div class="app-shell"><aside class="sidebar"><div class="progress-seal" style="--progress:${progress * 3.6}deg" aria-label="Dossier ${progress}% complete"><div><strong>${progress}%</strong><span class="small">ready</span></div></div>
     <nav class="side-nav" aria-label="Dossier sections">${navItems.map(([key, label]) => `<button type="button" class="nav-button${view === key ? ' active' : ''}" data-view="${key}"${view === key ? ' aria-current="page"' : ''}>${label}</button>`).join('')}</nav><p id="save-state" class="save-state">Encrypted · saved locally</p></aside>
-    <main id="main" class="main-panel" tabindex="-1">${renderView()}</main></div>${footer()}`;
+    <main id="main" class="main-panel" tabindex="-1">${risks.length ? `<div class="error credential-warning" role="alert"><strong>Credential-like content is blocked from print and readable export.</strong><span>Edit and remove it from ${escapeHtml(risks[0].label)}. Encrypted backup remains available so no data is destroyed.</span></div>` : ''}${renderView()}</main></div>${footer()}`;
   bindCommonEvents();
   bindViewEvents();
 }
@@ -165,7 +184,7 @@ function recordsView(): string {
 function recordMarkup(item: DossierEntry): string {
   const contact = dossier!.contacts.find((person) => person.id === item.contactId);
   const needsReview = !item.locator || (item.renewalDate && item.renewalDate < today());
-  return `<li class="record${needsReview ? ' needs-review' : ''}" data-search="${escapeHtml(`${item.title} ${item.category} ${item.institution}`.toLowerCase())}" data-category="${escapeHtml(item.category)}"><h3>${escapeHtml(item.title)}</h3><div class="record-meta"><span>${escapeHtml(item.category)}</span>${item.institution ? `<span>${escapeHtml(item.institution)}</span>` : ''}<span>${item.locator ? `Located: ${escapeHtml(item.locator)}` : 'Location missing'}</span>${contact ? `<span>Contact: ${escapeHtml(contact.name)}</span>` : ''}</div><button class="icon-button" type="button" data-edit-record="${item.id}" aria-label="Edit ${escapeHtml(item.title)}">✎</button></li>`;
+  return `<li class="record${needsReview ? ' needs-review' : ''}" data-search="${escapeHtml(`${item.title} ${item.category} ${item.institution}`.toLowerCase())}" data-category="${escapeHtml(item.category)}"><h3>${safeReadableText(item.title)}</h3><div class="record-meta"><span>${escapeHtml(item.category)}</span>${item.institution ? `<span>${safeReadableText(item.institution)}</span>` : ''}<span>${item.locator ? `Located: ${safeReadableText(item.locator)}` : 'Location missing'}</span>${contact ? `<span>Contact: ${escapeHtml(contact.name)}</span>` : ''}</div><button class="icon-button" type="button" data-edit-record="${item.id}" aria-label="Edit ${escapeHtml(item.title)}">✎</button></li>`;
 }
 
 function peopleView(): string {
@@ -179,7 +198,7 @@ function planView(): string {
     <form id="plan-form"><div class="two-column"><div class="field"><label for="owner-name">Whose dossier is this?</label><input id="owner-name" name="ownerName" value="${escapeHtml(profile.ownerName)}" autocomplete="name"></div><div class="field"><label for="jurisdiction">Jurisdiction</label><input id="jurisdiction" name="jurisdiction" value="${escapeHtml(profile.jurisdiction)}" placeholder="Country and state/province" aria-describedby="jurisdiction-help"><span id="jurisdiction-help" class="field-hint">Shown as context only; no local legal rules are inferred.</span></div></div>
     <div class="field"><label for="dossier-location">Where will your family find the passphrase and sealed cover?</label><input id="dossier-location" name="dossierLocation" value="${escapeHtml(profile.dossierLocation)}" placeholder="Example: sealed envelope with lawyer" aria-describedby="location-help"><span id="location-help" class="field-hint">Do not enter the passphrase here.</span></div>
     <div class="field"><label for="executor-instructions">What should they do first?</label><textarea id="executor-instructions" name="executorInstructions" placeholder="Example: Call my sister first. Contact the lawyer before closing accounts…">${escapeHtml(profile.executorInstructions)}</textarea></div>
-    <div class="field"><label for="review-months">Review interval</label><select id="review-months" name="reviewMonths"><option value="3"${profile.reviewMonths === 3 ? ' selected' : ''}>Every 3 months</option><option value="6"${profile.reviewMonths === 6 ? ' selected' : ''}>Every 6 months</option><option value="12"${profile.reviewMonths === 12 ? ' selected' : ''}>Every 12 months</option></select></div><button class="button primary" type="submit">Save handoff plan</button></form></section>`;
+    <div class="field"><label for="review-months">Review interval</label><select id="review-months" name="reviewMonths"><option value="3"${profile.reviewMonths === 3 ? ' selected' : ''}>Every 3 months</option><option value="6"${profile.reviewMonths === 6 ? ' selected' : ''}>Every 6 months</option><option value="12"${profile.reviewMonths === 12 ? ' selected' : ''}>Every 12 months</option></select></div><div id="plan-error" aria-live="assertive"></div><button class="button primary" type="submit">Save handoff plan</button></form></section>`;
 }
 
 function reviewChecks(): Array<{ done: boolean; text: string; detail: string }> {
@@ -195,7 +214,7 @@ function reviewChecks(): Array<{ done: boolean; text: string; detail: string }> 
 }
 
 function coverMarkup(): string {
-  return `<div class="cover-preview"><div class="cover-inner"><p class="eyebrow">Private continuity record</p><h2>Family Digital Dossier</h2><div class="cover-seal" aria-hidden="true"></div><p><strong>Prepared for</strong><br>${escapeHtml(dossier!.profile.ownerName || '________________________')}</p><p><strong>Jurisdiction noted</strong><br>${escapeHtml(dossier!.profile.jurisdiction || '________________________')}</p><p><strong>Passphrase / access instructions are kept at</strong><br>${escapeHtml(dossier!.profile.dossierLocation || '________________________')}</p><div class="legal-warning">This locator does not grant authority or replace a will, power of attorney, password vault, or local legal advice.</div><p class="small">Last reviewed: ${dossier!.reviews[0] ? humanDate(dossier!.reviews[0].date) : 'Not yet reviewed'} · Contains ${dossier!.entries.length} record pointers</p></div></div>`;
+  return `<div class="cover-preview"><div class="cover-inner"><p class="eyebrow">Private continuity record</p><h2>Family Digital Dossier</h2><div class="cover-seal" aria-hidden="true"></div><p><strong>Prepared for</strong><br>${safeReadableText(dossier!.profile.ownerName, '________________________')}</p><p><strong>Jurisdiction noted</strong><br>${safeReadableText(dossier!.profile.jurisdiction, '________________________')}</p><p><strong>Passphrase / access instructions are kept at</strong><br>${safeReadableText(dossier!.profile.dossierLocation, '________________________')}</p><div class="legal-warning">This locator does not grant authority or replace a will, power of attorney, password vault, or local legal advice.</div><p class="small">Last reviewed: ${dossier!.reviews[0] ? humanDate(dossier!.reviews[0].date) : 'Not yet reviewed'} · Contains ${dossier!.entries.length} record pointers</p></div></div>`;
 }
 
 function reviewView(): string {
@@ -207,7 +226,7 @@ function reviewView(): string {
     <h2>Printable sealed cover</h2><p>Print this page, write nothing secret on it, and store it where your trusted person expects.</p></div>${coverMarkup()}
     <div class="screen-only actions"><button class="button primary" id="print-cover" type="button">Print sealed cover</button></div>
     <div class="pro-panel screen-only"><p class="eyebrow">One-time dossier plus</p><h3>${license.unlocked ? 'Full handoff packet unlocked' : 'Print a complete handoff packet'}</h3><p>${license.unlocked ? 'Your packet can include the cover, handoff plan, trusted people, and every locator record.' : 'A one-time ₹799 purchase adds a full printable packet and reusable starter templates. The core dossier, encrypted backup, CSV export, and cover stay free.'}</p>${license.unlocked ? '<button class="button" id="print-packet" type="button">Print full packet</button>' : `<a class="button" href="${BUY_URL}">Buy one-time unlock</a>`}</div>
-    ${license.unlocked ? `<div class="print-packet" hidden><h2>First-hour instructions</h2><p>${escapeHtml(dossier!.profile.executorInstructions || 'No instructions recorded.')}</p><h2>Trusted people</h2>${dossier!.contacts.map((person) => `<div class="record"><h3>${escapeHtml(person.name)}</h3><p>${escapeHtml(person.role)} · ${escapeHtml(person.phone)} · ${escapeHtml(person.email)}</p><p>${escapeHtml(person.notes)}</p></div>`).join('')}<h2>Record locator</h2>${dossier!.entries.map((item) => `<div class="record"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.category)} · ${escapeHtml(item.institution)}</p><p><strong>Location:</strong> ${escapeHtml(item.locator)}</p><p>${escapeHtml(item.instructions)}</p></div>`).join('')}</div>` : ''}</section>`;
+    ${license.unlocked ? `<div class="print-packet" hidden><h2>First-hour instructions</h2><p>${safeReadableText(dossier!.profile.executorInstructions, 'No instructions recorded.')}</p><h2>Trusted people</h2>${dossier!.contacts.map((person) => `<div class="record"><h3>${escapeHtml(person.name)}</h3><p>${escapeHtml(person.role)} · ${escapeHtml(person.phone)} · ${escapeHtml(person.email)}</p><p>${safeReadableText(person.notes)}</p></div>`).join('')}<h2>Record locator</h2>${dossier!.entries.map((item) => `<div class="record"><h3>${safeReadableText(item.title)}</h3><p>${escapeHtml(item.category)} · ${safeReadableText(item.institution)}</p><p><strong>Location:</strong> ${safeReadableText(item.locator)}</p><p>${safeReadableText(item.instructions)}</p></div>`).join('')}</div>` : ''}</section>`;
 }
 
 function settingsView(): string {
@@ -235,11 +254,23 @@ function bindViewEvents(): void {
   document.querySelector('#add-contact')?.addEventListener('click', () => openContactDialog());
   document.querySelector('#empty-add-contact')?.addEventListener('click', () => openContactDialog());
   document.querySelectorAll<HTMLElement>('[data-edit-contact]').forEach((button) => button.addEventListener('click', () => openContactDialog(button.dataset.editContact)));
-  document.querySelector<HTMLFormElement>('#plan-form')?.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); dossier!.profile = { ownerName: String(form.get('ownerName')), jurisdiction: String(form.get('jurisdiction')), dossierLocation: String(form.get('dossierLocation')), executorInstructions: String(form.get('executorInstructions')), reviewMonths: Number(form.get('reviewMonths')) }; await persist('Handoff plan saved.'); renderDossier(); });
+  document.querySelector<HTMLFormElement>('#plan-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLFormElement;
+    const form = new FormData(target);
+    if (rejectCredentialLikeInput(target, [
+      { field: 'ownerName', label: 'Owner name', value: String(form.get('ownerName')) },
+      { field: 'jurisdiction', label: 'Jurisdiction', value: String(form.get('jurisdiction')) },
+      { field: 'dossierLocation', label: 'Passphrase and sealed-cover location', value: String(form.get('dossierLocation')) },
+      { field: 'executorInstructions', label: 'First-hour instructions', value: String(form.get('executorInstructions')) },
+    ], 'plan-error')) return;
+    dossier!.profile = { ownerName: String(form.get('ownerName')), jurisdiction: String(form.get('jurisdiction')), dossierLocation: String(form.get('dossierLocation')), executorInstructions: String(form.get('executorInstructions')), reviewMonths: Number(form.get('reviewMonths')) };
+    await persist('Handoff plan saved.'); renderDossier();
+  });
   document.querySelector('#complete-review')?.addEventListener('click', completeReview);
   document.querySelector('#three-record-drill')?.addEventListener('click', runDrill);
-  document.querySelector('#print-cover')?.addEventListener('click', () => { document.body.classList.remove('packet-print'); window.print(); });
-  document.querySelector('#print-packet')?.addEventListener('click', () => { document.body.classList.add('packet-print'); window.addEventListener('afterprint', () => document.body.classList.remove('packet-print'), { once: true }); window.print(); });
+  document.querySelector('#print-cover')?.addEventListener('click', () => { if (!allowReadableOutput()) return; document.body.classList.remove('packet-print'); window.print(); });
+  document.querySelector('#print-packet')?.addEventListener('click', () => { if (!allowReadableOutput()) return; document.body.classList.add('packet-print'); window.addEventListener('afterprint', () => document.body.classList.remove('packet-print'), { once: true }); window.print(); });
   document.querySelector('#export-backup')?.addEventListener('click', exportBackup);
   document.querySelector('#export-csv')?.addEventListener('click', exportCsv);
   document.querySelector('#import-backup')?.addEventListener('click', openImportDialog);
@@ -261,17 +292,32 @@ function openRecordDialog(id?: string): void {
   const existing = dossier!.entries.find((item) => item.id === id);
   const dialog = openDialog(`<div class="dialog-head"><div><p class="eyebrow">Record locator</p><h2>${existing ? 'Edit record' : 'Add a record'}</h2></div><button class="dialog-close" type="button" data-close aria-label="Close">×</button></div><form id="record-form">
     <div class="field"><label for="record-title">Record name</label><input id="record-title" name="title" value="${escapeHtml(existing?.title)}" required placeholder="Example: Life insurance policy" autofocus></div><div class="two-column"><div class="field"><label for="record-category">Category</label><select id="record-category" name="category">${CATEGORIES.map((category) => `<option${existing?.category === category ? ' selected' : ''}>${category}</option>`).join('')}</select></div><div class="field"><label for="record-institution">Institution or provider</label><input id="record-institution" name="institution" value="${escapeHtml(existing?.institution)}"></div></div>
-    <div class="field"><label for="record-locator">Where is it found?</label><input id="record-locator" name="locator" value="${escapeHtml(existing?.locator)}" placeholder="Example: blue safe, top shelf" aria-describedby="locator-hint"><span id="locator-hint" class="field-hint">Use a physical place or password-vault item name. Never put a password here.</span></div><div class="field"><label for="record-reference">Safe reference label</label><input id="record-reference" name="reference" value="${escapeHtml(existing?.reference)}" placeholder="Nickname or last four digits only"></div>
+    <div class="field"><label for="record-locator">Where is it found?</label><input id="record-locator" name="locator" value="${escapeHtml(existing?.locator)}" placeholder="Example: blue safe, top shelf" aria-describedby="locator-hint"><span id="locator-hint" class="field-hint">Use a physical place or password-vault item name. Credential-like text is blocked.</span></div><div class="field"><label for="record-reference">Safe reference label</label><input id="record-reference" name="reference" value="${escapeHtml(existing?.reference)}" placeholder="Nickname or last four digits only"></div>
     <div class="two-column"><div class="field"><label for="record-contact">Helpful contact</label><select id="record-contact" name="contactId"><option value="">No contact linked</option>${dossier!.contacts.map((person) => `<option value="${person.id}"${existing?.contactId === person.id ? ' selected' : ''}>${escapeHtml(person.name)}</option>`).join('')}</select></div><div class="field"><label for="record-renewal">Renewal / review date</label><input id="record-renewal" name="renewalDate" type="date" value="${escapeHtml(existing?.renewalDate)}"></div></div><div class="field"><label for="record-instructions">Locator notes</label><textarea id="record-instructions" name="instructions">${escapeHtml(existing?.instructions)}</textarea></div>
-    <div class="actions"><button class="button primary" type="submit">${existing ? 'Save record' : 'Add record'}</button><button class="button" data-close type="button">Cancel</button>${existing ? '<button class="button danger" id="delete-record" type="button">Delete record</button>' : ''}</div></form>`);
-  dialog.querySelector<HTMLFormElement>('#record-form')!.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); const timestamp = new Date().toISOString(); const item: DossierEntry = { id: existing?.id || uid(), title: String(form.get('title')).trim(), category: String(form.get('category')) as DossierEntry['category'], institution: String(form.get('institution')).trim(), locator: String(form.get('locator')).trim(), reference: String(form.get('reference')).trim(), contactId: String(form.get('contactId')), renewalDate: String(form.get('renewalDate')), instructions: String(form.get('instructions')).trim(), reviewedAt: existing?.reviewedAt || '', createdAt: existing?.createdAt || timestamp, updatedAt: timestamp }; if (existing) dossier!.entries[dossier!.entries.indexOf(existing)] = item; else dossier!.entries.unshift(item); await persist(existing ? 'Record updated.' : 'Record added.'); dialog.close(); dialog.remove(); renderDossier(); });
+    <div id="record-error" role="alert" aria-live="assertive"></div><div class="actions"><button class="button primary" type="submit">${existing ? 'Save record' : 'Add record'}</button><button class="button" data-close type="button">Cancel</button>${existing ? '<button class="button danger" id="delete-record" type="button">Delete record</button>' : ''}</div></form>`);
+  dialog.querySelector<HTMLFormElement>('#record-form')!.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLFormElement;
+    const form = new FormData(target);
+    if (rejectCredentialLikeInput(target, [
+      { field: 'title', label: 'Record name', value: String(form.get('title')) },
+      { field: 'institution', label: 'Institution or provider', value: String(form.get('institution')) },
+      { field: 'locator', label: 'Location', value: String(form.get('locator')) },
+      { field: 'reference', label: 'Safe reference', value: String(form.get('reference')) },
+      { field: 'instructions', label: 'Locator notes', value: String(form.get('instructions')) },
+    ], 'record-error')) return;
+    const timestamp = new Date().toISOString();
+    const item: DossierEntry = { id: existing?.id || uid(), title: String(form.get('title')).trim(), category: String(form.get('category')) as DossierEntry['category'], institution: String(form.get('institution')).trim(), locator: String(form.get('locator')).trim(), reference: String(form.get('reference')).trim(), contactId: String(form.get('contactId')), renewalDate: String(form.get('renewalDate')), instructions: String(form.get('instructions')).trim(), reviewedAt: existing?.reviewedAt || '', createdAt: existing?.createdAt || timestamp, updatedAt: timestamp };
+    if (existing) dossier!.entries[dossier!.entries.indexOf(existing)] = item; else dossier!.entries.unshift(item);
+    await persist(existing ? 'Record updated.' : 'Record added.'); dialog.close(); dialog.remove(); renderDossier();
+  });
   dialog.querySelector('#delete-record')?.addEventListener('click', async () => { if (!confirm(`Delete “${existing!.title}”? This cannot be undone.`)) return; dossier!.entries = dossier!.entries.filter((item) => item.id !== existing!.id); await persist('Record deleted.'); dialog.close(); dialog.remove(); renderDossier(); });
 }
 
 function openContactDialog(id?: string): void {
   const existing = dossier!.contacts.find((item) => item.id === id);
-  const dialog = openDialog(`<div class="dialog-head"><div><p class="eyebrow">Trusted person</p><h2>${existing ? 'Edit person' : 'Add a person'}</h2></div><button class="dialog-close" data-close type="button" aria-label="Close">×</button></div><form id="contact-form"><div class="two-column"><div class="field"><label for="contact-name">Name</label><input id="contact-name" name="name" value="${escapeHtml(existing?.name)}" required autofocus></div><div class="field"><label for="contact-role">Role</label><input id="contact-role" name="role" value="${escapeHtml(existing?.role)}" placeholder="Executor, lawyer, sibling"></div><div class="field"><label for="contact-phone">Phone</label><input id="contact-phone" name="phone" type="tel" value="${escapeHtml(existing?.phone)}" autocomplete="tel"></div><div class="field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" value="${escapeHtml(existing?.email)}" autocomplete="email"></div></div><div class="field"><label for="contact-notes">Notes</label><textarea id="contact-notes" name="notes">${escapeHtml(existing?.notes)}</textarea></div><div class="actions"><button class="button primary" type="submit">${existing ? 'Save person' : 'Add person'}</button><button class="button" data-close type="button">Cancel</button>${existing ? '<button class="button danger" id="delete-contact" type="button">Delete person</button>' : ''}</div></form>`);
-  dialog.querySelector<HTMLFormElement>('#contact-form')!.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); const person: TrustedContact = { id: existing?.id || uid(), name: String(form.get('name')).trim(), role: String(form.get('role')).trim(), phone: String(form.get('phone')).trim(), email: String(form.get('email')).trim(), notes: String(form.get('notes')).trim() }; if (existing) dossier!.contacts[dossier!.contacts.indexOf(existing)] = person; else dossier!.contacts.push(person); await persist(existing ? 'Person updated.' : 'Trusted person added.'); dialog.close(); dialog.remove(); renderDossier(); });
+  const dialog = openDialog(`<div class="dialog-head"><div><p class="eyebrow">Trusted person</p><h2>${existing ? 'Edit person' : 'Add a person'}</h2></div><button class="dialog-close" data-close type="button" aria-label="Close">×</button></div><form id="contact-form"><div class="two-column"><div class="field"><label for="contact-name">Name</label><input id="contact-name" name="name" value="${escapeHtml(existing?.name)}" required autofocus></div><div class="field"><label for="contact-role">Role</label><input id="contact-role" name="role" value="${escapeHtml(existing?.role)}" placeholder="Executor, lawyer, sibling"></div><div class="field"><label for="contact-phone">Phone</label><input id="contact-phone" name="phone" type="tel" value="${escapeHtml(existing?.phone)}" autocomplete="tel"></div><div class="field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" value="${escapeHtml(existing?.email)}" autocomplete="email"></div></div><div class="field"><label for="contact-notes">Notes</label><textarea id="contact-notes" name="notes">${escapeHtml(existing?.notes)}</textarea></div><div id="contact-error" aria-live="assertive"></div><div class="actions"><button class="button primary" type="submit">${existing ? 'Save person' : 'Add person'}</button><button class="button" data-close type="button">Cancel</button>${existing ? '<button class="button danger" id="delete-contact" type="button">Delete person</button>' : ''}</div></form>`);
+  dialog.querySelector<HTMLFormElement>('#contact-form')!.addEventListener('submit', async (event) => { event.preventDefault(); const target = event.currentTarget as HTMLFormElement; const form = new FormData(target); if (rejectCredentialLikeInput(target, [{ field: 'notes', label: 'Notes', value: String(form.get('notes')) }], 'contact-error')) return; const person: TrustedContact = { id: existing?.id || uid(), name: String(form.get('name')).trim(), role: String(form.get('role')).trim(), phone: String(form.get('phone')).trim(), email: String(form.get('email')).trim(), notes: String(form.get('notes')).trim() }; if (existing) dossier!.contacts[dossier!.contacts.indexOf(existing)] = person; else dossier!.contacts.push(person); await persist(existing ? 'Person updated.' : 'Trusted person added.'); dialog.close(); dialog.remove(); renderDossier(); });
   dialog.querySelector('#delete-contact')?.addEventListener('click', async () => { if (!confirm(`Delete “${existing!.name}”? Linked records will keep their other details.`)) return; dossier!.contacts = dossier!.contacts.filter((person) => person.id !== existing!.id); dossier!.entries.forEach((item) => { if (item.contactId === existing!.id) item.contactId = ''; }); await persist('Person deleted.'); dialog.close(); dialog.remove(); renderDossier(); });
 }
 
@@ -290,6 +336,7 @@ function runDrill(): void {
 function download(name: string, content: string, type: string): void { const url = URL.createObjectURL(new Blob([content], { type })); const anchor = document.createElement('a'); anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url); }
 function exportBackup(): void { if (envelope) { download(`family-dossier-${today()}.encrypted.json`, JSON.stringify(envelope, null, 2), 'application/json'); showStatus('Encrypted backup exported.'); } }
 function exportCsv(): void {
+  if (!allowReadableOutput()) return;
   if (!confirm('CSV is readable and not encrypted. Continue only if you can store the file safely.')) return;
   const quote = (value: string): string => `"${value.replaceAll('"', '""')}"`;
   const rows = [['Title', 'Category', 'Institution', 'Location', 'Safe reference', 'Renewal date', 'Instructions'], ...dossier!.entries.map((item) => [item.title, item.category, item.institution, item.locator, item.reference, item.renewalDate, item.instructions])];
@@ -298,7 +345,7 @@ function exportCsv(): void {
 
 function openImportDialog(): void {
   const dialog = openDialog(`<div class="dialog-head"><div><p class="eyebrow">Replace local dossier</p><h2>Import encrypted backup</h2></div><button class="dialog-close" data-close type="button" aria-label="Close">×</button></div><div class="legal-warning">A valid backup will replace the dossier currently on this device. Export the current dossier first if you need it.</div><form id="import-form"><div class="field"><label for="backup-file">Encrypted JSON backup</label><input id="backup-file" name="file" type="file" accept="application/json,.json" required></div><div class="field"><label for="backup-passphrase">Backup passphrase</label><input id="backup-passphrase" name="backupPassphrase" type="password" autocomplete="current-password" required></div><button class="button primary" type="submit">Verify and replace dossier</button></form><div id="import-error" aria-live="assertive"></div>`);
-  dialog.querySelector<HTMLFormElement>('#import-form')!.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); const file = form.get('file'); const error = dialog.querySelector('#import-error')!; try { if (!(file instanceof File)) throw new Error('Choose an encrypted JSON backup.'); const parsed: unknown = JSON.parse(await file.text()); if (!isEncryptedEnvelope(parsed)) throw new Error('This is not a Family Digital Dossier encrypted backup.'); const backupPassphrase = String(form.get('backupPassphrase')); const restored = await decryptDossier(parsed, backupPassphrase); dossier = restored; passphrase = backupPassphrase; envelope = parsed; await writeEnvelope(parsed); dialog.close(); dialog.remove(); view = 'overview'; renderDossier(); showStatus('Encrypted backup restored.'); } catch (caught) { error.className = 'error'; error.textContent = caught instanceof Error ? caught.message : 'Backup could not be imported.'; } });
+  dialog.querySelector<HTMLFormElement>('#import-form')!.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); const file = form.get('file'); const error = dialog.querySelector('#import-error')!; try { if (!(file instanceof File)) throw new Error('Choose an encrypted JSON backup.'); const parsed: unknown = JSON.parse(await file.text()); if (!isEncryptedEnvelope(parsed)) throw new Error('This is not a Family Digital Dossier encrypted backup.'); const backupPassphrase = String(form.get('backupPassphrase')); const restored = await decryptDossier(parsed, backupPassphrase); const risks = findDossierCredentialRisks(restored); if (risks.length) throw new Error(`This backup contains credential-like content in ${risks[0].label}. Remove it in the original dossier before importing.`); dossier = restored; passphrase = backupPassphrase; envelope = parsed; await writeEnvelope(parsed); dialog.close(); dialog.remove(); view = 'overview'; renderDossier(); showStatus('Encrypted backup restored.'); } catch (caught) { error.className = 'error'; error.textContent = caught instanceof Error ? caught.message : 'Backup could not be imported.'; } });
 }
 
 function openPassphraseDialog(): void {
