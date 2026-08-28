@@ -1,4 +1,14 @@
-# Family Digital Dossier — polish 3 handoff
+# Family Digital Dossier — review 4 handoff
+
+## Review 4 completion
+
+- Performed the required cold, adversarial review without changing product code.
+- Wrote `.factory/review-4.md`; verdict: **PASS** with zero findings.
+- New clean clone: `/tmp/fdd-review4-S1LTEy`; `npm ci`, every one of the 30 exact `.factory/claims.json` commands, and `npm test` all passed. The full suite passed typecheck, ESLint, 14 unit tests, build, and 26 Playwright checks.
+- Live checks confirmed the 390 px and desktop first-read flow, realistic one-click sample dossier, same-origin-only demo traffic, reset/exit storage isolation, offline demo, deep links, Back/focus behavior, metadata, security headers, and the designed 404.
+- The verified local build and live site use `app-Dfhdc2mw.js` (15.95 kB gzip).
+
+For the full evidence, copy audit, claim run, and prior-finding reconciliation, see `.factory/review-4.md`.
 
 ## Delivered
 
