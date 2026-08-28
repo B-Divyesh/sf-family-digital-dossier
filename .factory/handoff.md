@@ -1,32 +1,36 @@
-# Family Digital Dossier — adversarial review 2 handoff
+# Family Digital Dossier — polish round 2 handoff
 
-## Status
+## Delivered
 
-Work order `family-digital-dossier-review-2` is complete. Verdict: **FAIL**.
+Repair commit `58adcc5c7ca66d9468d3c9c0dc2c951c994cfc3e` closes every finding in review rounds 1 and 2. The live site is <https://family-digital-dossier.sociobot.in>.
 
-The complete evidence-backed report is `.factory/review-2.md`. No product code, infrastructure, DNS, or billing state was changed.
+- The demo remains a one-click, realistic, isolated `demo:family-digital-dossier` sample with reset, exit, and offline use.
+- Claim commands now build for themselves; all 26 current registry commands pass from a clean clone.
+- The dead paid checkout and its billing client were removed. The app has no paid tier and all tools are free.
+- Copy, footer disclosure, legal pages, scope, external-link labels, record-person links, MIT text, catalog description, and claims were corrected.
+- The distinct sealed-constellation folio system, PWA class, metadata, routes, 404, keyboard/focus behavior, and mobile layout remain intact.
 
-## Main results
+## Verification
 
-- Cold first-read, one-click demo, demo isolation/reset/exit, offline demo use, route metadata, 404, Back/focus behavior, accessibility, privacy interception, internal links, and the distinct visual identity pass.
-- All 25 exact `.factory/claims.json` commands fail from a clean clone because `test:claims` previews a missing `dist/` instead of building first. A diagnostic build followed by the aggregate claim suite passes 8/8.
-- The live **Buy Dossier Plus** link returns HTTP 404. UC-15 mocks a license but does not test checkout.
-- Review-1 COPY-L17 (“Offline copy ready.”) and COPY-L15 (passive footer disclosure) are not actually closed and are blocking again under the history rule.
-- Six additional major/minor findings cover overbroad or unlisted claims, first-screen grammar, and external-link labeling.
+- `npm test` passed: typecheck, lint, 14 unit tests, build, 22 Playwright browser/accessibility/mobile/privacy/offline tests.
+- `npm run test:claims` passed 11/11 tagged scenarios.
+- A fresh `git clone --no-local` plus `npm ci` ran all 26 exact `.factory/claims.json` commands independently; all passed.
+- Live `PLAYWRIGHT_BASE_URL=https://family-digital-dossier.sociobot.in npx playwright test` passed 22/22.
+- Live `verify-url.sh` passed; evidence is `.factory/evidence/polish-2/verify-live/verify.json`.
+- Lighthouse live: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 1.0 s, TBT 0 ms, CLS 0.
+- Deployment `5c8588f1-6598-4473-95a7-f3865dfaa173` completed successfully. The live root returned 200; the unknown route returned the intended HTTP 404.
 
-## Verification performed
+## How to run
 
-- Fresh contexts at 390×844 and 1440×900, before scroll.
-- Live demo edit, reset, exit, real-database marker preservation, database deletion, and request interception.
-- Live offline `/demo` and `/demo/records` reload with the seeded record visible.
-- Every one of 25 registered claim commands from a `git clone --no-local` at `263cb354297b67351c0104822a5d7d5d705ff888`: 0 passed, 25 failed at the missing-build precondition.
-- Diagnostic `npm run build && npm run test:claims`: 8/8 grouped claim scenarios passed.
-- `npm test`: passed TypeScript, ESLint, 14/14 unit tests, build, and 19/19 browser tests.
-- `PLAYWRIGHT_BASE_URL=https://family-digital-dossier.sociobot.in npx playwright test tests/e2e/app.spec.ts`: 11/11 passed.
-- `/opt/fleet/lib/verify-url.sh`: passed with no browser errors or baseline accessibility defects.
-- Live crawl: every internal route/asset passed; checkout alone returned 404; the designed unknown route returned its intended 404.
-- Local and production `index.html` and hashed app JavaScript SHA-256 values matched exactly.
+```sh
+npm ci
+npm test
+npm run test:claims
+npm run build
+```
 
-## Next steps
+Deploy `dist/` as a static PWA. The detailed finding map and evidence are in `.factory/polish-2.md`.
 
-Repair the four blocking findings first, then the six remaining findings in `.factory/review-2.md`. Run each claim command independently after deleting `dist/`, confirm the real checkout without a mocked license, and repeat the entire cold review.
+## Known gaps
+
+None. The standalone `@axe-core/cli` could not start ChromeDriver in this container, but the equivalent Playwright axe checks passed locally and against production.
