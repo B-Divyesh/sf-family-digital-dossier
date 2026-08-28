@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 const DEMO_PASSPHRASE = 'sample dossier only 2026';
+const APP_ORIGIN = new URL(process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4173').origin;
 
 async function openDemo(page: Page): Promise<void> {
   await page.goto('/?demo=1');
@@ -74,12 +75,12 @@ test('@claim:uc-01 @claim:uc-02 @claim:uc-05 @claim:uc-07 @claim:uc-21 demo is u
   await expect(page.getByRole('heading', { name: 'Asha Mehta’s dossier' })).toBeVisible();
   expect(await idbValue(page, 'family-digital-dossier')).toEqual(realBeforeReset);
   expect(await context.cookies()).toEqual([]);
-  expect(outbound.filter((item) => new URL(item.url).origin !== 'http://127.0.0.1:4173')).toEqual([]);
+  expect(outbound.filter((item) => new URL(item.url).origin !== APP_ORIGIN)).toEqual([]);
   expect(outbound.filter((item) => item.method !== 'GET' || item.body)).toEqual([]);
   const remoteResources = await page.locator('script[src], link[rel="stylesheet"], link[rel="preload"]').evaluateAll((nodes) => nodes.map((node) => node instanceof HTMLScriptElement ? node.src : (node as HTMLLinkElement).href).filter(Boolean).filter((url) => new URL(url).origin !== location.origin));
   expect(remoteResources).toEqual([]);
   await page.getByRole('button', { name: 'Start for real' }).click();
-  await expect(page).toHaveURL('http://127.0.0.1:4173/');
+  await expect(page).toHaveURL(`${APP_ORIGIN}/`);
   expect(await idbValue(page, 'family-digital-dossier')).toEqual(realBeforeReset);
   const databases = await page.evaluate(async () => (await indexedDB.databases()).map((item) => item.name));
   expect(databases).not.toContain('demo:family-digital-dossier');
@@ -178,7 +179,7 @@ test('@claim:uc-08 @claim:uc-10 @claim:uc-14 fields persist and secret boundarie
   await expect(page.getByText('password=LegacySecret_42!')).toHaveCount(0);
   await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Export readable CSV' }).click();
-  await expect(page.getByRole('status')).toContainText('Remove credential-like content');
+  await expect(page.locator('#status')).toContainText('Remove credential-like content');
   await page.getByRole('link', { name: 'Review & print' }).click();
   await page.evaluate(() => { (window as Window & { printCalled?: boolean }).print = () => { (window as Window & { printCalled?: boolean }).printCalled = true; }; });
   await page.getByRole('button', { name: 'Print sealed cover' }).click();
@@ -263,7 +264,7 @@ test('@claim:uc-06 @claim:uc-13 backup restore, passphrase change, install metad
 
 test('@claim:uc-15 @claim:uc-16 @claim:uc-22 Plus terms, free tools, and daily license verification behave as stated', async ({ page }) => {
   const external: string[] = [];
-  page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url()); });
+  page.on('request', (request) => { if (new URL(request.url()).origin !== APP_ORIGIN) external.push(request.url()); });
   await openDemo(page);
   await page.getByRole('link', { name: 'Settings', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Export encrypted backup' })).toBeEnabled();

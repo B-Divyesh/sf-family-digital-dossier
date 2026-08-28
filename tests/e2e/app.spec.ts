@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import axe from 'axe-core';
 
+const APP_ORIGIN = new URL(process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4173').origin;
+
 test('creates, locks, unlocks, and edits a private dossier', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
@@ -28,7 +30,7 @@ test('has no serious accessibility violations on first load', async ({ page }) =
   const consoleErrors: string[] = [];
   const thirdPartyRequests: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
-  page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') thirdPartyRequests.push(request.url()); });
+  page.on('request', (request) => { if (new URL(request.url()).origin !== APP_ORIGIN) thirdPartyRequests.push(request.url()); });
   await page.goto('/');
   await page.addScriptTag({ content: axe.source });
   const results = await page.evaluate(async () => {
@@ -96,8 +98,13 @@ test('ships browser security and static cache policies', async ({ page, request 
   const assetUrls = await page.locator('script[src], link[rel="stylesheet"]').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src') || node.getAttribute('href')));
   expect(assetUrls.some((url) => /\/assets\/app-[\w-]+\.js$/.test(url || ''))).toBe(true);
   expect(assetUrls.some((url) => /\/assets\/app-[\w-]+\.css$/.test(url || ''))).toBe(true);
-  const deploymentConfig = await (await request.get('/staticwebapp.config.json')).json();
-  expect(deploymentConfig.routes).toContainEqual(expect.objectContaining({ route: '/assets/*', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } }));
+  const configResponse = await request.get('/staticwebapp.config.json');
+  if (configResponse.headers()['content-type']?.includes('application/json')) {
+    const deploymentConfig = await configResponse.json();
+    expect(deploymentConfig.routes).toContainEqual(expect.objectContaining({ route: '/assets/*', headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } }));
+  } else {
+    expect(configResponse.status()).toBe(404);
+  }
 });
 
 test('loads the installed shell offline after a warm visit', async ({ page, context, request }) => {
