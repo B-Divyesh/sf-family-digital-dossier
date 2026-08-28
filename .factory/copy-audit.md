@@ -45,7 +45,7 @@ All landing sentences are 14 words or fewer. None contains a banned marketing wo
 | Prepare the handoff in three steps | Introduces three verb-led steps. |
 | List record locations / Name trusted people / Print or export the handoff | Stable terms and concrete actions. |
 | What this dossier does not do | Names limits directly. |
-| All tools are free | States that no purchase is required. |
+| All tools are free | States no purchase is required; UC-16 proves it. |
 
 ## README sentences
 

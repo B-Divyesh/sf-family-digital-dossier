@@ -1,27 +1,44 @@
-# Family Digital Dossier — review 3 handoff
+# Family Digital Dossier — polish 3 handoff
 
 ## Delivered
 
-Completed the requested adversarial review without changing product code. Added `.factory/review-3.md` and committed the review documents.
+- Closed every review finding from rounds 1–3. The complete id-to-fix-to-evidence record is in `.factory/polish-3.md`.
+- Made legal copy precise and testable: removed the untestable host-log statement and browser-site-data deletion outcome; added coverage for Settings deletion, Cache Storage contents, and the narrow terms scope.
+- Added the missing evidence for the landing statement that all tools are free and require neither a purchase nor a license.
+- Kept the app’s archival-folio visual system while changing the mobile dossier navigation to a visible, non-clipped six-button grid.
+- Preserved direct `/demo` and `?demo=1` sandbox entry, isolated demo storage, banner/reset controls, real routes, titles, legal pages, 404, offline shell, and local-first data handling.
 
-## Verification performed
+## Commits and deployment
 
-- Cold live Chromium checks at 390×844 and 1440×900, with fresh storage; first-read gate passed and no console errors occurred.
-- Live demo probe confirmed the filled Asha Mehta sample, persistent banner, reset/exit actions, separate encrypted `demo:family-digital-dossier` storage, unchanged real marker, and no external request.
-- Live offline, route/title/canonical/H1/focus/back/404/metadata, response-header, asset, and link-crawl checks were run.
-- Created a clean `git clone --no-local`, ran `npm ci`, then ran all 26 exact `.factory/claims.json` commands independently. All passed.
-- Ran `npm test` in that clean clone through typecheck, lint, 14 unit tests, build, and browser-test execution.
+- `ac6ceaa` — closed legal privacy claim gaps.
+- `3f6c202` — made mobile dossier navigation fully visible.
+- `d444081` — added the evidence-backed free-tools claim.
+- All repair commits are pushed to `origin/main`.
+- Static deployment: `e0717072-a504-4323-8425-1be3b23fbc3b`.
+- Live: https://family-digital-dossier.sociobot.in
 
-## Result and remaining work
+## Verification
 
-Review verdict: **FAIL**. Product behavior and all registered claims passed. Four concrete statements on the live Privacy/Terms routes are not registered or sandbox-tested: hosting-log retention, two deletion statements, exact offline-cache contents, and legal-document/account-authority scope. See `F-3-1` through `F-3-4` in `.factory/review-3.md` for required copy or test changes.
+- Fresh clone at `d444081`: `npm ci`, then every one of the 30 exact commands in `.factory/claims.json` passed independently from clean state.
+- Fresh clone: `npm test` passed typecheck, lint, 14 Vitest tests, build, and 26 Playwright tests.
+- Live production: `PLAYWRIGHT_BASE_URL=https://family-digital-dossier.sociobot.in npx playwright test` passed all 25 deployed-artifact browser checks.
+- Live verifier: `.factory/evidence/polish-3/verify-live-final/verify.json` records title, `lang`, one `h1`, main landmark, alt text, named buttons, and no console errors.
+- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s, CLS 0. Evidence: `.factory/evidence/polish-3/lighthouse-live.json`.
+- Reviewed final live screenshots: `.factory/evidence/polish-3/live/home-mobile.png`, `demo-mobile-final.png`, `privacy-desktop.png`, `terms-desktop.png`, and `not-found-desktop.png`.
+- Built assets remain within budget: JavaScript 53.03 kB (15.95 kB gzip), CSS 15.37 kB (4.33 kB gzip).
 
-## How to repeat
+## How to run
 
-```sh
+```bash
 npm ci
+npm run dev
 npm test
 npm run test:claims
+npm run build
 ```
 
-For strict registry verification, run each `test` value in `.factory/claims.json` separately from a new clone with no `dist/` directory.
+Open `http://localhost:5173/demo` or `http://localhost:5173/?demo=1` for the isolated sample dossier. Demo data uses the `demo:` IndexedDB namespace; Reset demo reseeds only that namespace.
+
+## Known gaps
+
+None.
