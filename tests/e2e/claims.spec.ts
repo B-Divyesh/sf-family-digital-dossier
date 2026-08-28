@@ -248,9 +248,11 @@ test('@claim:uc-06 @claim:uc-13 backup restore, passphrase change, install metad
   await page.getByRole('button', { name: 'Verify and replace dossier' }).click();
   await expect(page.getByRole('heading', { name: 'Asha Mehta’s dossier' })).toBeVisible();
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
-  await context.setOffline(true);
   const offlinePage = await context.newPage();
   await offlinePage.goto('/demo', { waitUntil: 'domcontentloaded' });
+  await expect(offlinePage.getByRole('heading', { level: 1, name: 'Asha Mehta’s dossier' })).toBeVisible({ timeout: 7_000 });
+  await context.setOffline(true);
+  await offlinePage.reload({ waitUntil: 'domcontentloaded' });
   await expect(offlinePage.getByRole('heading', { level: 1, name: 'Asha Mehta’s dossier' })).toBeVisible({ timeout: 7_000 });
   await expect(offlinePage.getByText('10', { exact: true }).first()).toBeVisible();
   await offlinePage.getByRole('link', { name: 'Records', exact: true }).click();
