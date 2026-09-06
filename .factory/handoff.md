@@ -1,68 +1,62 @@
-# Family Digital Dossier — review 5 handoff
+# Family Digital Dossier — repair 2 handoff
 
-## Review 5 result
+## Result
 
-**FAIL.** This review changed reports only; no product code was modified.
+**PASS.** Review 5 finding F-5-1 is fixed. No product feature, storage boundary, public copy, or visual behavior changed.
 
-- Reviewed live URL: <https://family-digital-dossier.sociobot.in>.
-- Implementation reviewed: `d444081dd43ce3a4f797bba4aca852edaf8226a3`.
-- Documentation head: `c3b11d4c0878ba863401ebdb13540376c49aac47`.
-- Fresh phone and desktop sessions passed the first-read, sample-dossier, reset/exit isolation, privacy, offline, route, 404, link, and accessibility checks.
-- Clean clone: `npm ci` passed. Every one of the 30 declared claim commands ran; 29 passed and UC-11 failed. `npm test` failed for the same UC-11 assertion.
-- Finding F-5-1: the review-history claim test expects a hard-coded February 2027 date, but on 2026-09-06 the six-month review date is March 2027. The claim command must calculate the date or freeze time before this product can pass.
+Family Digital Dossier lets adults record where essential family records are, who can help, and what to do first during illness or after death. On a fresh phone and desktop, the first screen says **Map essential records for someone you trust**. Its first action is **Try it with sample data**, followed by the result sentence and three device, offline, and price facts.
 
-See `.factory/review-5.md` for all evidence, the previous-finding disposition, and required repair.
+## Repair
 
-## How to verify after repair
+- Reproduced the failure after the documented `npm ci`: UC-11 expected February 2027 while the live six-month result was March 2027.
+- Replaced the moving, hard-coded month assertion with a browser outcome test fixed at 2026-09-06.
+- The test completes a review, records a three-record drill, reloads the encrypted sample, and verifies the visible next review is March 6, 2027.
+- The assertion remains tagged `@claim:uc-11`, so its exact command and the aggregate suite exercise the repair.
+
+Implementation and test repair: `fbb9d579b3e86eb134cb4616cdf95c1ab69d5084`.
+
+The deployed runtime bundle remains `assets/app-Dfhdc2mw.js`, SHA-256 `6cd013b8f94310d4a173f236b204f0e629f5e6fd6f4f4baec0c8fe9fb4cf3ce0`. It exactly matches the build from the repair commit. This repair changes test code only.
+
+## Clean verification
+
+A new `git clone --no-local` at the repair commit was used with no pre-existing `dist/` or `node_modules`.
 
 ```bash
 npm ci
 npm test
-npm run test:claims -- --grep @claim:uc-11
 ```
 
-Then run every command in `.factory/claims.json` from a clean clone. Open `/?demo=1` or `/demo` to review the isolated sample dossier.
+- `npm ci`: 140 packages, zero vulnerabilities.
+- `npm test`: typecheck and ESLint passed; Vitest passed 14/14; Vite produced `dist/`; Playwright passed 26/26.
+- Every one of the 30 exact commands in `.factory/claims.json` passed separately after the clean install.
+- `npm run test:claims -- --grep @claim:uc-11` passed independently.
+- Production output: app JavaScript 53.03 kB raw / 15.95 kB gzip; CSS 15.37 kB raw / 4.33 kB gzip.
 
-## Review 4 archive
+## Live verification
 
-## Review 4 completion
+- Deployment: `6a1fc9ac-d1f7-4012-ba53-e0f583e842e6` to the existing `sf-family-digital-dossier` Static Web App.
+- HTTPS root returned 200. The factory URL verifier found `lang=en`, one H1, one main landmark, no missing alt text, no unnamed buttons, and no console errors.
+- The live Playwright suite passed 26/26. It covered normal, invalid, boundary, recovery, keyboard, focus, reduced-motion, mobile, privacy, offline, service-worker, route, legal, and designed-404 behavior.
+- The Playwright axe integration found zero serious or critical issues on the landing, demo, legal, and 404 pages.
+- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 1.00 s, LCP 1.10 s, TBT 54 ms, CLS 0.
+- Internal crawl: 15 discovered product links worked. Home, direct demo routes, Privacy, and Terms returned 200. The deliberate unknown route returned 404 with the designed recovery page.
+- Fresh 390×844 and 1440×900 contexts had no horizontal overflow or browser errors. The first-screen job, audience, action, result, and three facts were visible before scrolling.
+- In both fresh contexts, the sample opened with Asha Mehta, ten realistic records, three trusted people, instructions, and review history. The demo label persisted through navigation. Reset restored the sample. Start for real left an independent real-store marker unchanged.
+- The warmed live sample and landing shell reloaded offline.
 
-- Performed the required cold, adversarial review without changing product code.
-- Wrote `.factory/review-4.md`; verdict: **PASS** with zero findings.
-- New clean clone: `/tmp/fdd-review4-S1LTEy`; `npm ci`, every one of the 30 exact `.factory/claims.json` commands, and `npm test` all passed. The full suite passed typecheck, ESLint, 14 unit tests, build, and 26 Playwright checks.
-- Live checks confirmed the 390 px and desktop first-read flow, realistic one-click sample dossier, same-origin-only demo traffic, reset/exit storage isolation, offline demo, deep links, Back/focus behavior, metadata, security headers, and the designed 404.
-- The verified local build and live site use `app-Dfhdc2mw.js` (15.95 kB gzip).
+Evidence is under `/work/.evidence/`: phone and desktop home/demo screenshots, `fdd-repair2-lighthouse.json`, `fdd-repair2-verify/verify.json`, and `catalog-description.txt`.
 
-For the full evidence, copy audit, claim run, and prior-finding reconciliation, see `.factory/review-4.md`.
+## Earlier findings
 
-## Delivered
+- Review 1 demo, claims, routing, first-screen, metadata, and preview findings remain closed.
+- Review 2 clean claim setup, billing-link removal, copy, scope, relationship, version, license, and external-link findings remain closed.
+- Review 3 deletion, cache, privacy, and legal-scope claim findings remain closed.
+- The earlier offline, credential-rejection, CSP, cache-policy, mobile-navigation, and free-tool findings remain closed in the clean and live suites.
+- Review 5 F-5-1 is closed by the date-stable UC-11 outcome test and its clean-clone pass.
 
-- Closed every review finding from rounds 1–3. The complete id-to-fix-to-evidence record is in `.factory/polish-3.md`.
-- Made legal copy precise and testable: removed the untestable host-log statement and browser-site-data deletion outcome; added coverage for Settings deletion, Cache Storage contents, and the narrow terms scope.
-- Added the missing evidence for the landing statement that all tools are free and require neither a purchase nor a license.
-- Kept the app’s archival-folio visual system while changing the mobile dossier navigation to a visible, non-clipped six-button grid.
-- Preserved direct `/demo` and `?demo=1` sandbox entry, isolated demo storage, banner/reset controls, real routes, titles, legal pages, 404, offline shell, and local-first data handling.
+The current product advertises no paid offer and contains no checkout or license path, so no billing-offer evidence file applies to this repair.
 
-## Commits and deployment
-
-- `ac6ceaa` — closed legal privacy claim gaps.
-- `3f6c202` — made mobile dossier navigation fully visible.
-- `d444081` — added the evidence-backed free-tools claim.
-- All repair commits are pushed to `origin/main`.
-- Static deployment: `e0717072-a504-4323-8425-1be3b23fbc3b`.
-- Live: https://family-digital-dossier.sociobot.in
-
-## Verification
-
-- Fresh clone at `d444081`: `npm ci`, then every one of the 30 exact commands in `.factory/claims.json` passed independently from clean state.
-- Fresh clone: `npm test` passed typecheck, lint, 14 Vitest tests, build, and 26 Playwright tests.
-- Live production: `PLAYWRIGHT_BASE_URL=https://family-digital-dossier.sociobot.in npx playwright test` passed all 25 deployed-artifact browser checks.
-- Live verifier: `.factory/evidence/polish-3/verify-live-final/verify.json` records title, `lang`, one `h1`, main landmark, alt text, named buttons, and no console errors.
-- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s, CLS 0. Evidence: `.factory/evidence/polish-3/lighthouse-live.json`.
-- Reviewed final live screenshots: `.factory/evidence/polish-3/live/home-mobile.png`, `demo-mobile-final.png`, `privacy-desktop.png`, `terms-desktop.png`, and `not-found-desktop.png`.
-- Built assets remain within budget: JavaScript 53.03 kB (15.95 kB gzip), CSS 15.37 kB (4.33 kB gzip).
-
-## How to run
+## Run locally
 
 ```bash
 npm ci
@@ -72,7 +66,7 @@ npm run test:claims
 npm run build
 ```
 
-Open `http://localhost:5173/demo` or `http://localhost:5173/?demo=1` for the isolated sample dossier. Demo data uses the `demo:` IndexedDB namespace; Reset demo reseeds only that namespace.
+Open `http://localhost:5173/demo` or `http://localhost:5173/?demo=1` for the isolated sample. Demo data uses `demo:family-digital-dossier`; reset and exit do not change the real database.
 
 ## Known gaps
 
