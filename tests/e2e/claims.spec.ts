@@ -202,6 +202,7 @@ test('@claim:uc-16 all dossier tools are available without a purchase or license
 });
 
 test('@claim:uc-11 review schedule, history, and three-record drill persist', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-09-06T12:00:00.000Z'));
   await openDemo(page);
   await page.getByRole('link', { name: 'Review & print' }).click();
   await expect(page.getByRole('heading', { name: 'Review history' })).toBeVisible();
@@ -215,7 +216,8 @@ test('@claim:uc-11 review schedule, history, and three-record drill persist', as
   await page.reload();
   await expect(page.getByText('Three-record location drill passed')).toBeVisible();
   await page.getByRole('link', { name: 'Overview', exact: true }).click();
-  await expect(page.getByText(/Feb .*2027/)).toBeVisible();
+  const nextReview = page.locator('.metric').filter({ hasText: 'Next review' });
+  await expect(nextReview).toContainText('Mar 6, 2027');
 });
 
 test('@claim:uc-12 @claim:uc-20 encrypted backup, readable spreadsheet, and sealed-cover print contain the promised output', async ({ page }) => {
