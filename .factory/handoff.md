@@ -1,4 +1,29 @@
-# Family Digital Dossier — review 4 handoff
+# Family Digital Dossier — review 5 handoff
+
+## Review 5 result
+
+**FAIL.** This review changed reports only; no product code was modified.
+
+- Reviewed live URL: <https://family-digital-dossier.sociobot.in>.
+- Implementation reviewed: `d444081dd43ce3a4f797bba4aca852edaf8226a3`.
+- Documentation head: `c3b11d4c0878ba863401ebdb13540376c49aac47`.
+- Fresh phone and desktop sessions passed the first-read, sample-dossier, reset/exit isolation, privacy, offline, route, 404, link, and accessibility checks.
+- Clean clone: `npm ci` passed. Every one of the 30 declared claim commands ran; 29 passed and UC-11 failed. `npm test` failed for the same UC-11 assertion.
+- Finding F-5-1: the review-history claim test expects a hard-coded February 2027 date, but on 2026-09-06 the six-month review date is March 2027. The claim command must calculate the date or freeze time before this product can pass.
+
+See `.factory/review-5.md` for all evidence, the previous-finding disposition, and required repair.
+
+## How to verify after repair
+
+```bash
+npm ci
+npm test
+npm run test:claims -- --grep @claim:uc-11
+```
+
+Then run every command in `.factory/claims.json` from a clean clone. Open `/?demo=1` or `/demo` to review the isolated sample dossier.
+
+## Review 4 archive
 
 ## Review 4 completion
 
